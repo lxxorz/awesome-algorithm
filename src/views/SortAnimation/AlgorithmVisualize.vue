@@ -3,15 +3,19 @@ import { ref, onMounted, } from "vue";
 import "d3-transition";
 import { select } from "d3-selection";
 import SortToolBar from "./SortToolBar.vue";
-const delay = ref(500);
-
+const delay = ref(100);
+// 排序算法生成初始数据
 function sort(arr: number[]): Array<State> {
   const length = arr.length;
   const tmp: Array<State> = [];
+  const sorted = new Array<boolean>(arr.length);
+  let is_end = false;
   tmp.push({
     data: [...arr],
     index: [null, null],
+    sorted: [...sorted],
     is_swap: false,
+    is_end
   })
   for (let i = length - 1; i > 1; i--) {
     for (let j = 0; j < i; ++j) {
@@ -20,19 +24,27 @@ function sort(arr: number[]): Array<State> {
         [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
         is_swap = true;
       }
+
       tmp.push({
         data: [...arr],
         index: [j, j + 1],
+        sorted: [...sorted],
         is_swap,
+        is_end
       })
     }
+    sorted[i] = true;
   }
+
+  tmp[tmp.length - 1].is_end = true;
   return tmp;
 }
 type State = {
   data: Array<number>
-  readonly index: [number | null, number | null]
-  is_swap: boolean
+  readonly index: [number | null, number | null],
+  sorted: boolean[],
+  is_swap: boolean,
+  is_end: boolean,
 };
 const height = 50,
   width = 100;
@@ -45,6 +57,8 @@ const cur = ref(0);
 const pause = ref(false);
 function reset() {
   cur.value = 0;
+  pause.value = true;
+
 }
 onMounted(() => {
   select("#container")
@@ -72,9 +86,15 @@ onMounted(() => {
         .transition()
         .duration(delay.value)
         .attr("fill", (d, i) => {
-          const { index } = currentState;
+          const { index, sorted, is_end } = currentState;
+          if(is_end) {
+            return "orange"
+          }
           if (index.includes(i)) {
             return "red";
+          }
+          if (sorted[i]) {
+            return "orange"
           }
           return "blue";
         });
