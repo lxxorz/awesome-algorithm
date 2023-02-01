@@ -68,7 +68,7 @@ const menuOptions = ref([
           <n-menu @update-value="handleUpdateValue" :inverted="inverted" :collapsed-width="64" :collapsed-icon-size="22"
             :options="menuOptions" />
         </n-layout-sider>
-        <n-layout-content>
+        <n-layout-content :inverted="inverted"  content-style="max-width: calc(100vw - 200px)">
           <RouterView />
         </n-layout-content>
       </n-layout>
