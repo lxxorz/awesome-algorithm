@@ -1,17 +1,18 @@
 {
   "files": [],
   "references": [
+
     {
-      "path": "./tsconfig.config.json"
+      "path": "./packages/data_generator/tsconfig.json"
     },
     {
-      "path": "./tsconfig.app.json"
+      "path": "./packages/site/tsconfig.config.json"
     },
     {
-      "path": "./tsconfig.vitest.json"
+      "path": "./packages/site/tsconfig.vitest.json"
+    },
+    {
+      "path": "./packages/site/tsconfig.app.json"
     }
-  ],
-  "compilerOptions": {
-    // "types": ["naive-ui/volar"]
-  }
+  ]
 }
