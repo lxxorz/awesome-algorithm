@@ -4,6 +4,7 @@
       startButtonText
     }}</toggle-button>
     <n-button type="primary" :render-icon="renderIcon(ResetIcon)" @click="handleReset">重置</n-button>
+    <sort-slider></sort-slider>
   </n-space>
 </template>
 
@@ -16,6 +17,7 @@ import { renderIcon } from "@/utils/common"
 import { inject, ref, onMounted, type Ref } from "vue"
 import ToggleButton, { type State } from "@/components/ToggleButton.vue";
 import { NSpace, NButton } from "naive-ui";
+import SortSlider from "../SortSlider.vue";
 export type Props = {
   auto_start: boolean
 }
@@ -30,7 +32,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emits = defineEmits(["onPause", "onStart", "onReset"])
 
 function handleToggle(is_start: State) {
-  startButtonText.value = is_start ==="1" ?  "开始" : "暂停"
+  startButtonText.value = is_start === "1" ? "开始" : "暂停"
   is_start === "1" ? emits("onPause") : emits("onStart")
 }
 
