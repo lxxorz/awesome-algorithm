@@ -1,1 +1,1 @@
-export {type State, sort} from "./sort/selection"
+export * from "./sort/selection"

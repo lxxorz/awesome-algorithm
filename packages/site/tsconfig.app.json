@@ -17,7 +17,7 @@
       ]
     },
     "lib": [
-      "ES2022"
+      "ES2022", "ES2018.Promise"
     ],
     "types": [
       "naive-ui/volar"

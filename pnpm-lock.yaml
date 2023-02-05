@@ -22,6 +22,7 @@ importers:
       '@types/d3-transition': ^3.0.3
       '@types/d3-zoom': ^3.0.2
       '@types/jsdom': ^20.0.1
+      '@types/katex': ^0.16.0
       '@types/node': ^18.11.12
       '@vicons/ionicons5': ^0.12.0
       '@vicons/tabler': ^0.12.0
@@ -40,6 +41,7 @@ importers:
       eslint: ^8.22.0
       eslint-plugin-vue: ^9.3.0
       jsdom: ^20.0.3
+      katex: ^0.16.4
       naive-ui: ^2.34.3
       npm-run-all: ^4.1.5
       pinia: ^2.0.28
@@ -56,11 +58,13 @@ importers:
       '@types/d3-selection': 3.0.4
       '@types/d3-transition': 3.0.3
       '@types/d3-zoom': 3.0.2
+      '@types/katex': 0.16.0
       d3-drag: 3.0.0
       d3-selection: 3.0.0
       d3-transition: 3.0.1_d3-selection@3.0.0
       d3-zoom: 3.0.0
       data_generator: link:../data_generator
+      katex: 0.16.4
       pinia: 2.0.30_5yi2kxxaqg74pgvs6b75qdtvru
       typescript: 4.7.4
       vue: 3.2.47
@@ -461,6 +465,10 @@ packages:
   /@types/katex/0.14.0:
     resolution: {integrity: sha512-+2FW2CcT0K3P+JMR8YG846bmDwplKUTsWgT2ENwdQ1UdVfRk3GQrh6Mi4sTopy30gI8Uau5CEqHTDZ6YvWIUPA==}
     dev: true
+
+  /@types/katex/0.16.0:
+    resolution: {integrity: sha512-hz+S3nV6Mym5xPbT9fnO8dDhBFQguMYpY0Ipxv06JMi1ORgnEM4M1ymWDUhUNer3ElLmT583opRo4RzxKmh9jw==}
+    dev: false
 
   /@types/lodash-es/4.17.6:
     resolution: {integrity: sha512-R+zTeVUKDdfoRxpAryaQNRKk3105Rrgx2CFRClIgRGaqDTdjsm8h6IYA8ir584W3ePzkZfst5xIgDwYrlh9HLg==}
@@ -1054,6 +1062,11 @@ packages:
   /commander/2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
     dev: true
+
+  /commander/8.3.0:
+    resolution: {integrity: sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==}
+    engines: {node: '>= 12'}
+    dev: false
 
   /concat-map/0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
@@ -2139,6 +2152,13 @@ packages:
   /json-stable-stringify-without-jsonify/1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
     dev: true
+
+  /katex/0.16.4:
+    resolution: {integrity: sha512-WudRKUj8yyBeVDI4aYMNxhx5Vhh2PjpzQw1GRu/LVGqL4m1AxwD1GcUp0IMbdJaf5zsjtj8ghP0DOQRYhroNkw==}
+    hasBin: true
+    dependencies:
+      commander: 8.3.0
+    dev: false
 
   /levn/0.3.0:
     resolution: {integrity: sha512-0OO4y2iOHix2W6ujICbKIaEQXvFQHue65vUG3pb5EUomzPI90z9hsA1VsO/dbIIpC53J8gxM9Q4Oho0jrCM/yA==}

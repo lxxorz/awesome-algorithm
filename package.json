@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "site:dev": "pnpm run -C packages/site dev"
+    "dev": "pnpm run -C packages/site dev",
+    "build": "pnpm run -C packages/site build"
   },
   "keywords": [],
   "author": "",

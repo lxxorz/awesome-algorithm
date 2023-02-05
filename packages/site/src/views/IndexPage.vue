@@ -8,7 +8,6 @@ import {
   NMenu,
   NLayoutContent,
   useMessage,
-  NDivider,
 } from "naive-ui";
 import { ref, h, provide, type Component } from "vue";
 import {
@@ -59,25 +58,16 @@ const menuOptions = ref([
 
 </script>
 <template>
-  <div id="app">
-    <n-space vertical>
-      <n-space> <n-switch v-model:value="inverted" /> inverted </n-space>
-      <n-layout has-sider>
-        <n-layout-sider bordered show-trigger collapse-mode="width" :collapsed-width="64" :width="240"
-          :native-scrollbar="false" :inverted="inverted">
-          <n-menu @update-value="handleUpdateValue" :inverted="inverted" :collapsed-width="64" :collapsed-icon-size="22"
-            :options="menuOptions" />
-        </n-layout-sider>
-        <n-layout-content :inverted="inverted"  content-style="max-width: calc(100vw - 200px)">
-          <RouterView />
-        </n-layout-content>
-      </n-layout>
-    </n-space>
+  <div class="animation-container" style="height: 100%">
+    <n-layout embedded has-sider style="height: 100%;" content-style="padding: 24px">
+      <n-layout-sider bordered show-trigger collapse-mode="width" :collapsed-width="64" :width="240"
+        :native-scrollbar="false" :inverted="inverted">
+        <n-menu @update-value="handleUpdateValue" :inverted="inverted" :collapsed-width="64" :collapsed-icon-size="22"
+          :options="menuOptions" />
+      </n-layout-sider>
+      <n-layout-content :native-scrollbar="false" :inverted="inverted">
+        <RouterView />
+      </n-layout-content>
+    </n-layout>
   </div>
 </template>
-
-<style scoped>
-#app {
-  height: 100vh;
-}
-</style>

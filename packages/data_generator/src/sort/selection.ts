@@ -1,42 +1,67 @@
 export type State = {
   data: Array<number>
-  readonly index: [number | null, number | null],
-  sorted: boolean[],
-  is_swap: boolean,
-  is_end: boolean,
+  readonly index: [number | null, number | null]
+  sorted: boolean[]
+  is_swap: boolean
+  is_end: boolean
+  max: number
 };
 
-export function sort(arr: number[]): Array<State> {
+export type SortResultData = {
+  state: Array<State>
+  max: number
+}
+function swap_arr(arr, i, j) {
+  [arr[i], arr[j]] = [arr[j], arr[i]]
+}
+export function sort(arr: number[]): SortResultData {
   const length = arr.length;
-  const tmp: Array<State> = [];
+  const state: Array<State> = [];
   const sorted = new Array<boolean>(arr.length);
   let is_end = false;
-  tmp.push({
+  let max = 0;
+  state.push({
     data: [...arr],
     index: [null, null],
     sorted: [...sorted],
     is_swap: false,
-    is_end
+    is_end,
+    max
   })
-  for (let i = length - 1; i > 1; i--) {
+  for (let i = length - 1; i > 0; i--) {
+    max = 0;
+    // 找出最大值的下标
     for (let j = 0; j < i; ++j) {
-      let is_swap = false;
-      if (arr[j] > arr[j + 1]) {
-        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
-        is_swap = true;
-      }
-
-      tmp.push({
+      state.push({
         data: [...arr],
-        index: [j, j + 1],
+        index: [max, j + 1],
         sorted: [...sorted],
-        is_swap,
+        is_swap: false,
+        max,
         is_end
       })
+      if (arr[max] < arr[j + 1]) {
+        max = j + 1;
+      }
     }
+    // 将最大值和最后一个交换
+    [arr[i], arr[max]] = [arr[max], arr[i]]
+    state.push({
+      data: [...arr],
+      index: [max, i],
+      sorted: [...sorted],
+      is_swap: true,
+      max: i,
+      is_end
+    })
+    // 将最后一个元素标记为有序
     sorted[i] = true;
   }
 
-  tmp[tmp.length - 1].is_end = true;
-  return tmp;
+  state[state.length - 1].is_end = true;
+
+  return {
+    state,
+    max: state.length
+  };
 }
