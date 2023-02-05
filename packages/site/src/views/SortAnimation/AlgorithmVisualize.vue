@@ -67,7 +67,7 @@ async function render(execute_times: number | null) {
           return datum + "";
         })
         .transition()
-        .delay(delay.value)
+        .duration(delay.value)
         .attr("fill", (d, i) => {
           const { index, sorted, is_end, max } = currentState;
           if (is_end) {
@@ -85,7 +85,7 @@ async function render(execute_times: number | null) {
           return "blue";
         })
         .transition()
-        .delay(delay.value)
+        .duration(delay.value)
         .attr("x", (_, i) => i * (barPadding + barWidth))
         .attr("y", (d) => getY(d, height));
 
