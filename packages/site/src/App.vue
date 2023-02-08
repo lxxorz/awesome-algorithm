@@ -8,7 +8,7 @@ import IndexPage from "@/views/IndexPage.vue";
 </script>
 
 <template>
-  <n-config-provider style="height: 100%" :theme="darkTheme">
+  <n-config-provider style="height: 100%">
     <n-message-provider>
       <index-page></index-page>
     </n-message-provider>
