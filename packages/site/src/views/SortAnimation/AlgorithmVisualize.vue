@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { select, type BaseType, type Selection } from "d3-selection";
+import { select, type Selection } from "d3-selection";
 import SortToolBar from "./SortToolBar.vue";
+import { NCard } from "naive-ui";
 import DescriptionCard from '@/components/DescriptionCard.vue'
 import { type SortResultData, sort } from "data_generator"
-import type { Transition } from "d3-transition"
+import { transition, type Transition } from "d3-transition"
 import "d3-transition"
 const delay = ref(250);
 // 排序算法生成初始数据
@@ -21,7 +22,6 @@ const getBarSize = () => {
   }
 }
 const { barWidth, barPadding } = getBarSize();
-const renderQueue: Array<() => Promise<void>> = [];
 const max = Math.max(...raw_data);
 const data = raw_data.map((h) => (h / (max + 10)) * height);
 const getX = (index: number) => index * (barPadding + barWidth)
@@ -33,21 +33,24 @@ const pause = ref(true);
 let chart: Selection<SVGRectElement, unknown, SVGElement, unknown> | null = null;
 let label: Selection<SVGTextElement, unknown, SVGElement, unknown> | null = null;
 
-type SelectionLike<T extends SVGElement, U extends unknown> =
-  Transition<T, U, SVGElement, unknown> | Selection<T, U, SVGElement, unknown>
-
-
 function bindKey(datum: unknown) {
   return datum + ""
-
 }
-function textStyle(selection: SelectionLike<SVGTextElement, number>) {
-  selection
+
+type SelectionLike<T extends SVGElement, U extends unknown> =
+  | Selection<T, U, SVGElement, unknown>
+  | Transition<T, U, SVGElement, unknown>
+function textStyle(selection_like: SelectionLike<SVGTextElement, number>) {
+  selection_like
     .style("font-size", "0.2em")
     .style("font-variant-numeric", "tabular-nums")
 }
+
+
 // 初始化动画
 onMounted(() => {
+  const init_transition = transition()
+    .duration(delay.value)
   function initial() {
     chart = select("#container")
       .attr("viewBox", [0, 0, width, height])
@@ -62,8 +65,10 @@ onMounted(() => {
       .attr("width", () => barWidth)
       .attr("height", (d) => d)
       .attr("x", (d, i) => getX(i))
+      .attr("y", (d, i) => height)
+      .attr("fill", "blue")
+      .transition(init_transition)
       .attr("y", (d) => getY(d, height))
-      .attr("fill", "blue");
 
     label = select("#container")
       .append("g")
@@ -76,11 +81,13 @@ onMounted(() => {
       .enter()
       .append("text")
       .attr("x", (d, i) => getX(i))
-      .attr("y", (d, i) => getY(d, height))
+      .attr("y", (d, i) => height)
       .attr("dx", () => barWidth / 2)
       .attr("dy", () => "-0.5em")
       .call(textStyle)
       .text(Math.floor)
+      .transition(init_transition)
+      .attr("y", (d, i) => getY(d, height))
 
   }
   initial();
@@ -179,27 +186,30 @@ async function onUpdateProgress(progress: number) {
 </script>
 <template>
   <div class="panel">
-    <div>
+    <n-card>
       <svg id="container"></svg>
       <sort-tool-bar class="tool-bar" @on-start="onStart" @on-pause="onPause" @on-reset="onReset" :auto_start="false"
         :max="sortResult.max - 1" :progress="cur" @update:progress="onUpdateProgress"></sort-tool-bar>
-    </div>
-    <description-card style="height: 100%"></description-card>
+    </n-card>
+    <description-card class="desc-card"></description-card>
   </div>
 </template>
 
 <style scoped>
 .panel {
-  height: 100%;
-  width: 100%;
-  align-items: center;
+  inline-size: 100%;
+  block-size: 100%;
   display: flex;
   flex-flow: row;
-  row-gap: 20px;
-  position: absolute;
+  justify-content: space-evenly;
+  align-items: stretch;
+  gap: 0 24px;
 }
 
-.panel>* {
-  flex: 1;
+.panel > * {
+  flex: 1 1 50%
+}
+.container {
+  max-height: 100%;
 }
 </style>
