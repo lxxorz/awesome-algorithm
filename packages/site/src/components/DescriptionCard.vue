@@ -35,7 +35,7 @@ onMounted(() => {
 
 <style scoped>
 .card {
-  height: 100%;
-  font-size: 1.5rem;
+  max-height: 100%;
+  font-size: 1.1rem;
 }
 </style>
