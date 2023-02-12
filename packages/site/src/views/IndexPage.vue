@@ -57,7 +57,7 @@ const menuOptions = ref([
 </script>
 <template>
   <div class="animation-container">
-    <n-layout embedded has-sider  content-style="padding: 24px">
+    <n-layout embedded has-sider style="width: 100vw; height: 100vh;"  content-style="padding: 24px">
       <n-layout-sider v-model:collapsed="is_collapsed"  bordered show-trigger collapse-mode="width" :collapsed-width="64" :width="240"
         :native-scrollbar="false" :inverted="inverted">
         <n-menu @update-value="handleUpdateValue" :inverted="inverted" :collapsed-width="64" :collapsed-icon-size="22"
@@ -69,3 +69,6 @@ const menuOptions = ref([
     </n-layout>
   </div>
 </template>
+<style scoped>
+
+</style>

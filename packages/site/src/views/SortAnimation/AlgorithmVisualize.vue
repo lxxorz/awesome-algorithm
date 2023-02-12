@@ -8,6 +8,9 @@ import { type SortResultData, sort } from "data_generator"
 import { transition, type Transition } from "d3-transition"
 import "d3-transition"
 const delay = ref(250);
+const svgTheme = {
+  bar_initial: "#404040",
+}
 // 排序算法生成初始数据
 const { height, width } = {
   width: 100,
@@ -66,7 +69,7 @@ onMounted(() => {
       .attr("height", (d) => d)
       .attr("x", (d, i) => getX(i))
       .attr("y", (d, i) => height)
-      .attr("fill", "blue")
+      .attr("fill", svgTheme.bar_initial)
       .transition(init_transition)
       .attr("y", (d) => getY(d, height))
 
@@ -124,7 +127,7 @@ async function render(execute_times: number | null) {
           if (sorted[i]) {
             return "orange"
           }
-          return "blue";
+          return svgTheme.bar_initial;
         })
         .transition()
         .duration(delay.value)
@@ -203,12 +206,17 @@ async function onUpdateProgress(progress: number) {
   flex-flow: row;
   justify-content: space-evenly;
   align-items: stretch;
-  gap: 0 24px;
 }
 
+@media (max-width: 1024px){
+  .panel {
+    flex-flow: column;
+  }
+}
 .panel > * {
   flex: 1 1 50%
 }
+
 .container {
   max-height: 100%;
 }
