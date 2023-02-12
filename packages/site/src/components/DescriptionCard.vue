@@ -37,5 +37,6 @@ onMounted(() => {
 .card {
   max-height: 100%;
   font-size: 1.1rem;
+  color: #404040;
 }
 </style>
