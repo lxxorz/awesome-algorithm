@@ -9,12 +9,12 @@ export type State = {
 
 export type SortResultData = {
   state: Array<State>
-  max: number
+  step_num: number
 }
 function swap_arr(arr, i, j) {
-  [arr[i], arr[j]] = [arr[j], arr[i]]
+  ;[arr[i], arr[j]] = [arr[j], arr[i]]
 }
-export function sort(arr: number[]): SortResultData {
+export function selection_sort(arr: number[]): SortResultData {
   const length = arr.length;
   const state: Array<State> = [];
   const sorted = new Array<boolean>(arr.length);
@@ -45,7 +45,7 @@ export function sort(arr: number[]): SortResultData {
       }
     }
     // 将最大值和最后一个交换
-    [arr[i], arr[max]] = [arr[max], arr[i]]
+    swap_arr(arr, i, max);
     state.push({
       data: [...arr],
       index: [max, i],
@@ -62,6 +62,6 @@ export function sort(arr: number[]): SortResultData {
 
   return {
     state,
-    max: state.length
+    step_num: state.length
   };
 }
