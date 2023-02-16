@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { select, type Selection, type BaseType } from "d3-selection";
+import { select } from "d3-selection";
 import SortToolBar from "./SortToolBar.vue";
 import { NCard } from "naive-ui";
 import DescriptionCard from '@/components/DescriptionCard.vue'
 import { type SortResultData, selection_sort, type State } from "data_generator"
-import { transition, type Transition } from "d3-transition"
+import { transition } from "d3-transition"
+import type { SelectionLike } from "@/types/sort_types";
 import "d3-transition"
 const delay = ref(250);
 const svgTheme = {
@@ -24,6 +25,10 @@ const getBarSize = () => {
     barPadding: totalSize / 5
   }
 }
+
+/**
+ * TODO: 考虑提取下面的函数
+ */
 const { barWidth, barPadding } = getBarSize();
 const max = Math.max(...raw_data);
 const data = raw_data.map((h) => Math.floor((h / (max + 20)) * height));
@@ -38,9 +43,7 @@ function bindKey(datum: unknown) {
   return datum + ""
 }
 
-type SelectionLike<T extends SVGElement, U extends unknown> =
-  | Selection<T, U, BaseType, unknown>
-  | Transition<T, U, BaseType, unknown>
+
 function textStyle(selection_like: SelectionLike<SVGTextElement, number>) {
   return selection_like
     .style("font-size", "0.2em")
@@ -48,12 +51,12 @@ function textStyle(selection_like: SelectionLike<SVGTextElement, number>) {
 }
 
 function defaultTransition(duration: (() => number) | number = delay.value) {
-  let stepCostTime: number ;
+  let stepCostTime: number;
   if (typeof duration === "function") {
     stepCostTime = duration();
   } else if (typeof duration === "number") {
     stepCostTime = duration;
-  } else  {
+  } else {
     throw new Error("duration must a function that return a number or a number");
   }
 
@@ -220,7 +223,7 @@ async function onUpdateProgress(progress: number) {
         :max="sortResult.step_num - 1" :progress="cur" @update:progress="onUpdateProgress"></sort-tool-bar>
     </n-card>
     <description-card class="desc-card"></description-card>
-  </div>
+</div>
 </template>
 
 <style scoped>
