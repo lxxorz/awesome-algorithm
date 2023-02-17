@@ -1,50 +1,71 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { select } from "d3-selection";
+import { select , type BaseType, type Selection} from "d3-selection";
 import SortToolBar from "./SortToolBar.vue";
 import { NCard } from "naive-ui";
 import DescriptionCard from '@/components/DescriptionCard.vue'
 import { type SortResultData, selection_sort, type State } from "data_generator"
-import { transition } from "d3-transition"
-import type { SelectionLike } from "@/types/sort_types";
+import { transition, type Transition } from "d3-transition"
+import type { SortItem, Widget } from "@/types";
 import "d3-transition"
+
 const delay = ref(250);
 const svgTheme = {
   bar_color: "#404040",
 }
 // 排序算法生成初始数据
-const { height, width } = {
+const widget = {
+  height: 100,
   width: 100,
-  height: 100
-};
-const raw_data = [93, 30, 59, 23, 99, 20, 83, 1, 2, 3, 4, 5, 6];
-const getBarSize = () => {
-  const totalSize = (width / raw_data.length);
+} satisfies Widget
+// TODO: 自定义生成数据
+// 数据归一化处理
+function getData(raw_data: Array<number>, Widget: Widget) {
+  const { height } = widget;
+  const wrap_data: Array<SortItem> = raw_data.map((value, i) => ({ value, id: i++, label: value }))
+  const max = Math.max(...raw_data);
+  return wrap_data.map(datum => {
+    const { value } = datum;
+    // 将实际的值映射为高度
+    return {
+      ...datum,
+      value: (value / (max + 10)) * height
+    }
+  })
+}
+// 获取排序项的宽度
+// gap: (1/5)*width
+// bar: (4/5)*width
+function getBarWidth(sort_items: Array<SortItem>) {
+  const bar_num = sort_items.length;
+  const item_width = (widget.width / bar_num)
   return {
-    barWidth: totalSize * 4 / 5,
-    barPadding: totalSize / 5
+    bar_width: item_width * 4 / 5,
+    bar_gap: item_width / 5
   }
 }
+const data = getData([1, 2, 3, 4, 58, 8, 24, 59, 80], widget);
 
-/**
- * TODO: 考虑提取下面的函数
- */
-const { barWidth, barPadding } = getBarSize();
-const max = Math.max(...raw_data);
-const data = raw_data.map((h) => Math.floor((h / (max + 20)) * height));
-const getX = (index: number) => index * (barPadding + barWidth)
+const { bar_width, bar_gap } = getBarWidth(data);
+const getX = (index: number) => index * (bar_gap + bar_width)
 const getY = (nodeHeight: number, height: number) => height - nodeHeight;
-const sortResult: SortResultData = selection_sort(data);
+const sortResult: SortResultData<SortItem> = selection_sort(data);
 const allState = sortResult.state;
 const cur = ref(0);
 const pause = ref(true);
 
-function bindKey(datum: unknown) {
-  return datum + ""
+function bindKey(datum: SortItem | number) {
+  if (typeof datum === "number") {
+    return datum + "";
+  } else {
+    return datum.id
+  }
 }
 
-
-function textStyle(selection_like: SelectionLike<SVGTextElement, number>) {
+type SelectionLike<T extends SVGElement, U extends unknown> =
+  | Selection<T, U, BaseType, unknown>
+  | Transition<T, U, BaseType, unknown>
+function textStyle(selection_like: SelectionLike<SVGTextElement, SortItem>) {
   return selection_like
     .style("font-size", "0.2em")
     .style("font-variant-numeric", "tabular-nums")
@@ -63,7 +84,7 @@ function defaultTransition(duration: (() => number) | number = delay.value) {
   return transition().duration(stepCostTime);
 }
 const getChart = () => select("#container")
-  .attr("viewBox", [0, 0, width, height])
+  .attr("viewBox", [0, 0, widget.width, widget.height])
   .append("g")
   .attr("id", "sort-bar")
   .selectAll<SVGRectElement, number>("rect")
@@ -80,13 +101,13 @@ function initialSortBar() {
     .data(data, bindKey)
     .enter()
     .append("rect")
-    .attr("width", () => barWidth)
-    .attr("height", (d) => d)
+    .attr("width", () => bar_width)
+    .attr("height", (d) => d.value)
     .attr("x", (d, i) => getX(i))
-    .attr("y", height)
+    .attr("y", widget.height)
     .attr("fill", svgTheme.bar_color)
     .transition(defaultTransition())
-    .attr("y", (d) => getY(d, height))
+    .attr("y", (d) => getY(d.value, widget.height))
 
 
   getLabel()
@@ -94,13 +115,13 @@ function initialSortBar() {
     .enter()
     .append("text")
     .attr("x", (d, i) => getX(i))
-    .attr("y", height)
-    .attr("dx", () => barWidth / 2)
+    .attr("y", widget.height)
+    .attr("dx", () => bar_width / 2)
     .attr("dy", () => "-0.5em")
     .call(textStyle)
-    .text(d => d)
+    .text(d => d.label)
     .transition(defaultTransition())
-    .attr("y", (d, i) => getY(d, height))
+    .attr("y", (d, i) => getY(d.value, widget.height))
 
 }
 
@@ -111,28 +132,29 @@ onMounted(() => {
   initialSortBar();
 })
 
-async function updateBar(currentState: State) {
+async function updateBar(currentState: State<SortItem>) {
   const { data } = currentState;
   const update_transition = select("#sort-bar")
     .selectAll<SVGElement, number>("rect")
     .data(data, bindKey)
     .transition(defaultTransition())
-    .attr("fill", (d, i) => {
-      const { index, sorted, is_end, max } = currentState;
+    .attr("fill", (sort_item, i) => {
+      const { compared_id, sorted, is_end, max_id } = currentState;
+      const {id} = sort_item;
       // 如果到了最后一步，全部都是有序的
       if (is_end) {
         return "orange"
       }
       // 最值
-      if (max === i) {
+      if (max_id === id) {
         return "green"
       }
       // 正在进行对比的项
-      if (index.includes(i)) {
+      if (compared_id.includes(id)) {
         return "red";
       }
       // 有序的项
-      if (sorted[i]) {
+      if (sorted.has(id)) {
         return "orange"
       }
       // 默认颜色
@@ -140,12 +162,12 @@ async function updateBar(currentState: State) {
     })
     .transition()
     .attr("x", (d, i) => getX(i))
-    .attr("y", (d) => getY(d, height))
+    .attr("y", (d) => getY(d.value, widget.height))
 
   await update_transition.end();
 }
 
-async function updateText(currentState: State) {
+async function updateText(currentState: State<SortItem>) {
   const { data } = currentState;
   const update_transition = select("#text")
     .selectAll<SVGTextElement, number>("text")
@@ -154,7 +176,7 @@ async function updateText(currentState: State) {
     .delay(delay.value)
     .duration(delay.value)
     .attr("x", (d, i) => getX(i))
-    .attr("y", (d) => getY(d, height))
+    .attr("y", (d) => getY(d.value, widget.height))
     .call(textStyle);
 
   await update_transition.end();
@@ -164,7 +186,6 @@ async function renderFn(execute_times: number | null) {
   for (let times = 0; !execute_times || times < execute_times; ++times, ++cur.value) {
     // 获取当前切片
     let currentState = allState[cur.value];
-    console.log(currentState.data);
     await Promise.all([updateBar(currentState), updateText(currentState)])
     // 如果处于暂停状态立即结束过渡
     if (pause.value) {
