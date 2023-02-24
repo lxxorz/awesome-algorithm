@@ -71,7 +71,7 @@ function textStyle(selection_like: SelectionLike<SVGTextElement, SortItem>) {
     .style("font-variant-numeric", "tabular-nums")
 }
 
-function defaultTransition(duration: (() => number) | number = delay.value) {
+function getDefaultTransition(duration: (() => number) | number = delay.value) {
   let stepCostTime: number;
   if (typeof duration === "function") {
     stepCostTime = duration();
@@ -106,7 +106,7 @@ function initialSortBar() {
     .attr("x", (d, i) => getX(i))
     .attr("y", widget.height)
     .attr("fill", svgTheme.bar_color)
-    .transition(defaultTransition())
+    .transition(getDefaultTransition())
     .attr("y", (d) => getY(d.value, widget.height))
 
 
@@ -120,12 +120,10 @@ function initialSortBar() {
     .attr("dy", () => "-0.5em")
     .call(textStyle)
     .text(d => d.label)
-    .transition(defaultTransition())
+    .transition(getDefaultTransition())
     .attr("y", (d, i) => getY(d.value, widget.height))
 
 }
-
-
 
 // 初始化动画
 onMounted(() => {
@@ -137,7 +135,7 @@ async function updateBar(currentState: State<SortItem>) {
   const update_transition = select("#sort-bar")
     .selectAll<SVGElement, number>("rect")
     .data(data, bindKey)
-    .transition(defaultTransition())
+    .transition(getDefaultTransition())
     .attr("fill", (sort_item, i) => {
       const { compared_id, sorted, is_end, max_id } = currentState;
       const {id} = sort_item;
