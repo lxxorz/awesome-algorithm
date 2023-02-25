@@ -26,13 +26,11 @@ export function useMathScope(desc: MaybeRef<string>) {
   desc = ref(desc)
   let match = inline_math_reg.exec(desc.value);
   while (match != null) {
-    console.log("match", match[0]);
     desc.value = desc.value.replace(match[0], renderMathInElement.renderToString(match[0].replaceAll("$", ""), {
       displayMode: false,
       output: "mathml"
     }))
     match = inline_math_reg.exec(desc.value);
   }
-  console.log(desc.value);
   return desc;
 }

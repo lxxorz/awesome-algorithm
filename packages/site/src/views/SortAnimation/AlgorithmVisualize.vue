@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { select , type BaseType, type Selection} from "d3-selection";
+import { select, type BaseType, type Selection } from "d3-selection";
 import SortToolBar from "./SortToolBar.vue";
 import { NCard } from "naive-ui";
 import DescriptionCard from '@/components/DescriptionCard.vue'
@@ -11,7 +11,9 @@ import "d3-transition"
 
 const delay = ref(250);
 const svgTheme = {
-  bar_color: "#404040",
+  // bar_color: "#404040",
+  bar_color: "none",
+  stroke_color: "#404040"
 }
 // 排序算法生成初始数据
 const widget = {
@@ -67,8 +69,9 @@ type SelectionLike<T extends SVGElement, U extends unknown> =
   | Transition<T, U, BaseType, unknown>
 function textStyle(selection_like: SelectionLike<SVGTextElement, SortItem>) {
   return selection_like
-    .style("font-size", "0.2em")
+    .style("font-size", "2")
     .style("font-variant-numeric", "tabular-nums")
+    .style("fill", "#fff")
 }
 
 function getDefaultTransition(duration: (() => number) | number = delay.value) {
@@ -97,7 +100,7 @@ const getLabel = () => select("#container")
 
 function initialSortBar() {
   const { data } = allState[0];
-  getChart()
+  const rects = getChart()
     .data(data, bindKey)
     .enter()
     .append("rect")
@@ -106,11 +109,11 @@ function initialSortBar() {
     .attr("x", (d, i) => getX(i))
     .attr("y", widget.height)
     .attr("fill", svgTheme.bar_color)
-    .transition(getDefaultTransition())
-    .attr("y", (d) => getY(d.value, widget.height))
+    .attr("stroke", svgTheme.stroke_color)
+    .attr("stroke-width", ".5")
+    .attr("pointer-events", "all")
 
-
-  getLabel()
+  const labels = getLabel()
     .data(data, bindKey)
     .enter()
     .append("text")
@@ -120,7 +123,26 @@ function initialSortBar() {
     .attr("dy", () => "-0.5em")
     .call(textStyle)
     .text(d => d.label)
+    .attr("pointer-events", "all")
+
+  rects.on("mouseover", function (event, datum,) {
+    select(this).style("stroke-width", "1")
+    labels.filter((text_datum) => text_datum.id === datum.id)
+      .style("font-size", "3")
+
+  }).on("mouseout", function (event, datum) {
+    select(this).style("stroke-width", ".5")
+    labels.filter((text_datum) => text_datum.id === datum.id)
+      .style("font-size", "2")
+  })
+
+  rects
     .transition(getDefaultTransition())
+    .attr("y", (d) => getY(d.value, widget.height))
+
+
+
+  labels.transition(getDefaultTransition())
     .attr("y", (d, i) => getY(d.value, widget.height))
 
 }
@@ -138,7 +160,7 @@ async function updateBar(currentState: State<SortItem>) {
     .transition(getDefaultTransition())
     .attr("fill", (sort_item, i) => {
       const { compared_id, sorted, is_end, max_id } = currentState;
-      const {id} = sort_item;
+      const { id } = sort_item;
       // 如果到了最后一步，全部都是有序的
       if (is_end) {
         return "orange"
@@ -167,9 +189,7 @@ async function updateBar(currentState: State<SortItem>) {
 
 async function updateText(currentState: State<SortItem>) {
   const { data } = currentState;
-  const update_transition = select("#text")
-    .selectAll<SVGTextElement, number>("text")
-    .data(data, bindKey)
+  const update_transition = select("#text").selectAll<SVGTextElement, number>("text").data(data, bindKey)
     .transition()
     .delay(delay.value)
     .duration(delay.value)
@@ -242,7 +262,7 @@ async function onUpdateProgress(progress: number) {
         :max="sortResult.step_num - 1" :progress="cur" @update:progress="onUpdateProgress"></sort-tool-bar>
     </n-card>
     <description-card class="desc-card"></description-card>
-</div>
+  </div>
 </template>
 
 <style scoped>
@@ -267,5 +287,9 @@ async function onUpdateProgress(progress: number) {
 
 .container {
   max-height: 100%;
+}
+
+.bar-text {
+  fill: #f00
 }
 </style>
