@@ -7,7 +7,7 @@ import {
   NLayoutContent,
   useMessage,
 } from "naive-ui";
-import { ref, h, provide, type Component } from "vue";
+import { ref, h, provide } from "vue";
 import {
   ArrowsSort as SortIcon,
   AlignRight as ItemIcon,
@@ -57,9 +57,9 @@ const menuOptions = ref([
 </script>
 <template>
   <div class="animation-container">
-    <n-layout embedded has-sider style="width: 100vw; height: 100vh;"  content-style="padding: 24px">
-      <n-layout-sider v-model:collapsed="is_collapsed"  bordered show-trigger collapse-mode="width" :collapsed-width="64" :width="240"
-        :native-scrollbar="false" :inverted="inverted">
+    <n-layout embedded has-sider style="width: 100vw; height: 100vh;" content-style="padding: 24px">
+      <n-layout-sider v-model:collapsed="is_collapsed" bordered show-trigger collapse-mode="width" :collapsed-width="64"
+        :width="240" :native-scrollbar="false" :inverted="inverted">
         <n-menu @update-value="handleUpdateValue" :inverted="inverted" :collapsed-width="64" :collapsed-icon-size="22"
           :options="menuOptions" />
       </n-layout-sider>
@@ -69,6 +69,4 @@ const menuOptions = ref([
     </n-layout>
   </div>
 </template>
-<style scoped>
-
-</style>
+<style scoped></style>

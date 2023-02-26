@@ -10,9 +10,8 @@
 import {
   Refresh as ResetIcon,
 } from "@vicons/tabler";
-import { invertedKey } from '@/utils/toolKeys';
 import { renderIcon } from "@/utils/common"
-import { inject, ref, onMounted, type Ref, watchEffect } from "vue"
+import { ref,  watchEffect } from "vue"
 import ToggleButton, { type State } from "@/components/ToggleButton.vue";
 import { NSpace, NButton } from "naive-ui";
 import SortSlider from "../SortSlider.vue";
@@ -23,8 +22,6 @@ export type Props = {
   progress?: number
   max: number
 }
-
-const inverted = inject(invertedKey, ref(false));
 const refToggleButton = ref<InstanceType<typeof ToggleButton> | null>(null)
 const props = withDefaults(defineProps<Props>(), {
   auto_start: false,

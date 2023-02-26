@@ -16,10 +16,10 @@ const svgTheme = {
   stroke_color: "#404040"
 }
 // 排序算法生成初始数据
-const widget = {
+const widget:Widget = {
   height: 100,
   width: 100,
-} satisfies Widget
+};
 // TODO: 自定义生成数据
 // 数据归一化处理
 function getData(raw_data: Array<number>, Widget: Widget) {

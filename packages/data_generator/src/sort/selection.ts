@@ -17,7 +17,7 @@ export type SortResultData<T extends Item> = {
   step_num: number
 }
 
-function swap_arr(arr, i, j) {
+function swap_arr(arr: Array<unknown>, i: number, j: number) {
   ;[arr[i], arr[j]] = [arr[j], arr[i]]
 }
 export function selection_sort<T extends Array<Item>>(arr: T): SortResultData<T[number]> {

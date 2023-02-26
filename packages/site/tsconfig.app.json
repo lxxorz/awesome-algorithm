@@ -10,6 +10,17 @@
   ],
   "compilerOptions": {
     "composite": true,
+    "module": "ESNext",
+    "strict": true,
+    "sourceMap": true,
+    "declaration": true,
+    "isolatedModules": true, // esbuild 限制
+    "noEmitOnError": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "incremental": true,
+    "skipLibCheck": true,
+    "importsNotUsedAsValues": "error",
     "baseUrl": ".",
     "paths": {
       "@/*": [
@@ -17,7 +28,7 @@
       ]
     },
     "lib": [
-      "ES2022", "ES2018.Promise"
+      "ESNext"
     ],
     "types": [
       "naive-ui/volar"
