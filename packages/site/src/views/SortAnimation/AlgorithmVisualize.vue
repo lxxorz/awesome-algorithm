@@ -7,8 +7,8 @@ import DescriptionCard from '@/components/DescriptionCard.vue'
 import { type SortResultData, selection_sort, type State } from "data_generator"
 import { transition, type Transition } from "d3-transition"
 import type { SortItem, Widget } from "@/types";
-import "d3-transition"
 
+const container = ref(null);
 const delay = ref(250);
 const svgTheme = {
   // bar_color: "#404040",
@@ -16,13 +16,13 @@ const svgTheme = {
   stroke_color: "#404040"
 }
 // 排序算法生成初始数据
-const widget:Widget = {
-  height: 100,
-  width: 100,
+const widget: Widget = {
+  width: 800,
+  height: 600,
 };
 // TODO: 自定义生成数据
 // 数据归一化处理
-function getData(raw_data: Array<number>, Widget: Widget) {
+function getData(raw_data: Array<number>, widget: Widget) {
   const { height } = widget;
   const wrap_data: Array<SortItem> = raw_data.map((value, i) => ({ value, id: i++, label: value }))
   const max = Math.max(...raw_data);
@@ -31,7 +31,7 @@ function getData(raw_data: Array<number>, Widget: Widget) {
     // 将实际的值映射为高度
     return {
       ...datum,
-      value: (value / (max + 10)) * height
+      value: (value / (max + 5)) * height
     }
   })
 }
@@ -52,7 +52,7 @@ const { bar_width, bar_gap } = getBarWidth(data);
 const getX = (index: number) => index * (bar_gap + bar_width)
 const getY = (nodeHeight: number, height: number) => height - nodeHeight;
 const sortResult: SortResultData<SortItem> = selection_sort(data);
-const allState = sortResult.state;
+const all_state = sortResult.state;
 const cur = ref(0);
 const pause = ref(true);
 
@@ -69,7 +69,7 @@ type SelectionLike<T extends SVGElement, U extends unknown> =
   | Transition<T, U, BaseType, unknown>
 function textStyle(selection_like: SelectionLike<SVGTextElement, SortItem>) {
   return selection_like
-    .style("font-size", "2")
+    .style("font-size", "12px")
     .style("font-variant-numeric", "tabular-nums")
     .style("fill", "#fff")
 }
@@ -86,21 +86,27 @@ function getDefaultTransition(duration: (() => number) | number = delay.value) {
 
   return transition().duration(stepCostTime);
 }
-const getChart = () => select("#container")
-  .attr("viewBox", [0, 0, widget.width, widget.height])
+const selectChart = () => select(container.value)
   .append("g")
   .attr("id", "sort-bar")
   .selectAll<SVGRectElement, number>("rect")
 
-const getLabel = () => select("#container")
+const selectLabel = () => select(container.value)
   .append("g")
   .attr("id", "text")
   .attr("text-anchor", "middle")
   .selectAll<SVGTextElement, number>("text")
 
-function initialSortBar() {
-  const { data } = allState[0];
-  const rects = getChart()
+function createChart() {
+  const { data } = all_state[0];
+  const scale_factor = 1.05;
+
+  select(container.value)
+    .attr("width", widget.width)
+    .attr("height", widget.height)
+    .attr("viewBox", [0, 0, widget.width, widget.height])
+    .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
+  const rects = selectChart()
     .data(data, bindKey)
     .enter()
     .append("rect")
@@ -110,37 +116,50 @@ function initialSortBar() {
     .attr("y", widget.height)
     .attr("fill", svgTheme.bar_color)
     .attr("stroke", svgTheme.stroke_color)
-    .attr("stroke-width", ".5")
+    .attr("stroke-width", "1")
     .attr("pointer-events", "all")
 
-  const labels = getLabel()
+  const labels = selectLabel()
     .data(data, bindKey)
     .enter()
     .append("text")
     .attr("x", (d, i) => getX(i))
     .attr("y", widget.height)
     .attr("dx", () => bar_width / 2)
-    .attr("dy", () => "-0.5em")
+    .attr("dy", () => "-10px")
     .call(textStyle)
     .text(d => d.label)
     .attr("pointer-events", "all")
 
   rects.on("mouseover", function (event, datum,) {
-    select(this).style("stroke-width", "1")
-    labels.filter((text_datum) => text_datum.id === datum.id)
-      .style("font-size", "3")
-
+    if (!pause.value)
+      return;
+    const rect = select(this);
+    const label = labels.filter((d) => d.id === datum.id)
+    const x = +rect.attr("x")
+    const factor_offset = scale_factor - 1;
+    const x_offset = -(x * factor_offset + bar_width * factor_offset / 2);
+    select(this)
+      .transition()
+      .attr("stroke-width", 2)
+      .attr("transform", `translate(${x_offset}, 0) scale(${scale_factor}, 1)`)
+    label.style("font-weight", "bold")
+      .style("font-size", "14px")
   }).on("mouseout", function (event, datum) {
-    select(this).style("stroke-width", ".5")
-    labels.filter((text_datum) => text_datum.id === datum.id)
-      .style("font-size", "2")
+    if (!pause.value)
+      return;
+    const label = labels.filter((d) => d.id === datum.id)
+    select(this)
+      .transition()
+      .attr("transform", "translate(0, 0) scale(1)")
+      .attr("stroke-width", 1)
+    label.style("font-weight", "normal")
+      .style("font-size", "12px")
   })
 
   rects
     .transition(getDefaultTransition())
     .attr("y", (d) => getY(d.value, widget.height))
-
-
 
   labels.transition(getDefaultTransition())
     .attr("y", (d, i) => getY(d.value, widget.height))
@@ -149,44 +168,48 @@ function initialSortBar() {
 
 // 初始化动画
 onMounted(() => {
-  initialSortBar();
+  createChart();
 })
 
 async function updateBar(currentState: State<SortItem>) {
   const { data } = currentState;
-  const update_transition = select("#sort-bar")
-    .selectAll<SVGElement, number>("rect")
-    .data(data, bindKey)
-    .transition(getDefaultTransition())
-    .attr("fill", (sort_item, i) => {
-      const { compared_id, sorted, is_end, max_id } = currentState;
-      const { id } = sort_item;
-      // 如果到了最后一步，全部都是有序的
-      if (is_end) {
-        return "orange"
-      }
-      // 最值
-      if (max_id === id) {
-        return "green"
-      }
-      // 正在进行对比的项
-      if (compared_id.includes(id)) {
-        return "red";
-      }
-      // 有序的项
-      if (sorted.has(id)) {
-        return "orange"
-      }
-      // 默认颜色
-      return svgTheme.bar_color;
-    })
+
+  const svg = select("#sort-bar");
+  const bars = svg.selectAll<SVGElement, number>("rect")
+    .data(data, bindKey);
+
+  const colors = getColorMap(currentState);
+
+  const updateTransition = bars.transition(getDefaultTransition())
+    .attr("fill", (d, i) => colors[d.id])
     .transition()
     .attr("x", (d, i) => getX(i))
-    .attr("y", (d) => getY(d.value, widget.height))
+    .attr("y", (d) => getY(d.value, widget.height));
 
-  await update_transition.end();
+  await updateTransition.end();
 }
 
+function getColorMap(currentState: State<SortItem>) {
+  const { compared_id, sorted, is_end, max_id } = currentState;
+  const colorMap: Record<string, string> = {};
+
+  for (const item of currentState.data) {
+    const { id } = item;
+    if (is_end) {
+      colorMap[id] = "orange";
+    } else if (max_id === id) {
+      colorMap[id] = "green";
+    } else if (compared_id.includes(id)) {
+      colorMap[id] = "red";
+    } else if (sorted.has(id)) {
+      colorMap[id] = "orange";
+    } else {
+      colorMap[id] = svgTheme.bar_color;
+    }
+  }
+
+  return colorMap;
+}
 async function updateText(currentState: State<SortItem>) {
   const { data } = currentState;
   const update_transition = select("#text").selectAll<SVGTextElement, number>("text").data(data, bindKey)
@@ -197,24 +220,32 @@ async function updateText(currentState: State<SortItem>) {
     .attr("y", (d) => getY(d.value, widget.height))
     .call(textStyle);
 
-  await update_transition.end();
+  await update_transition.end()
 }
 
 async function renderFn(execute_times: number | null) {
-  for (let times = 0; !execute_times || times < execute_times; ++times, ++cur.value) {
-    // 获取当前切片
-    let currentState = allState[cur.value];
-    await Promise.all([updateBar(currentState), updateText(currentState)])
+  let state = all_state[cur.value];
+  for (let times = 0; execute_times === null || times < execute_times; ++times) {
+
+    // 算法完成
+    if (!state) {
+      return;
+    }
     // 如果处于暂停状态立即结束过渡
     if (pause.value) {
-      break;
+      return;
     }
-    // 算法完成
-    if (cur.value >= sortResult.step_num - 1) {
-      onPause();
-      break;
+    console.log("execute");
+    await renderFrame(state);
+    state = all_state[cur.value + 1];
+    if (execute_times === null || times + 1 < execute_times && state) {
+      cur.value++;
     }
   }
+}
+
+async function renderFrame(frame: State<SortItem>) {
+  await Promise.all([updateBar(frame), updateText(frame)])
 }
 /**
  * 渲染可视化动画
@@ -224,40 +255,52 @@ function render(execute_times: number | null) {
   if (execute_times != null && (typeof execute_times !== "number" || execute_times < 0)) {
     throw new Error("执行次数必须是正整数或者0");
   }
-  renderFn(execute_times);
+  return renderFn(execute_times);
 }
 
+function interruptTransition() {
+  console.log("interrupt");
+
+  selectChart().interrupt()
+  selectLabel().interrupt()
+}
 
 // 开始播放动画
-function onStart() {
+async function onStart(execute_times: number | null = null) {
+  console.log("on start")
+  interruptTransition();
   pause.value = false;
-  render(null);
+  render(execute_times);
 }
 
 // 暂停动画
-function onPause() {
+async function onPause() {
+  console.log("on pause")
   pause.value = true;
 }
 
 // 重置动画
-function onReset() {
-  onPause();
-  cur.value = 0;
-  render(1);
+async function onReset() {
+  console.log("on reset")
+  cur.value = 0
+  onPause()
+  interruptTransition()
+  await renderFrame(all_state[0])
 }
 
 // 调整动画进度
 async function onUpdateProgress(progress: number) {
+  console.log("on update", pause.value)
   cur.value = progress;
   if (pause.value) {
-    render(1);
+
   }
 }
 </script>
 <template>
   <div class="panel">
     <n-card>
-      <svg id="container"></svg>
+      <svg id="container" ref="container"></svg>
       <sort-tool-bar class="tool-bar" @on-start="onStart" @on-pause="onPause" @on-reset="onReset" :auto_start="false"
         :max="sortResult.step_num - 1" :progress="cur" @update:progress="onUpdateProgress"></sort-tool-bar>
     </n-card>

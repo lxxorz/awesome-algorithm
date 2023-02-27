@@ -55,14 +55,12 @@ function start() {
   state.value = "2";
   icon.value = props.icon_2;
   text.value = props.text_2;
-  emits("onToggle", state.value);
 }
 
 function end() {
   state.value = "1";
   icon.value = props.icon_1
   text.value = props.text_1
-  emits("onToggle", state.value);
 }
 defineExpose({
   reset
