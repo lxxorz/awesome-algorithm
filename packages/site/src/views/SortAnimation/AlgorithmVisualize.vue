@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { select, type BaseType, type Selection } from "d3-selection";
 import SortToolBar from "./SortToolBar.vue";
 import { NCard } from "naive-ui";
@@ -98,9 +98,9 @@ const selectLabel = () => select(container.value)
   .selectAll<SVGTextElement, number>("text")
 
 function createChart() {
-  const { data } = all_state[0];
+  const { data } = current_state.value;
   const scale_factor = 1.05;
-
+  const colors = getColorMap(current_state.value);
   select(container.value)
     .attr("width", widget.width)
     .attr("height", widget.height)
@@ -114,7 +114,7 @@ function createChart() {
     .attr("height", (d) => d.value)
     .attr("x", (d, i) => getX(i))
     .attr("y", widget.height)
-    .attr("fill", svgTheme.bar_color)
+    .attr("fill", (d) => colors[d.id])
     .attr("stroke", svgTheme.stroke_color)
     .attr("stroke-width", "1")
     .attr("pointer-events", "all")
@@ -258,17 +258,15 @@ function render(execute_times: number | null) {
   return renderFn(execute_times);
 }
 
-function interruptTransition() {
-  console.log("interrupt");
+const current_state = computed(() => all_state[cur.value])
 
-  selectChart().interrupt()
-  selectLabel().interrupt()
+function setState(frame_index: number) {
+  cur.value = frame_index;
 }
 
 // 开始播放动画
 async function onStart(execute_times: number | null = null) {
   console.log("on start")
-  interruptTransition();
   pause.value = false;
   render(execute_times);
 }
@@ -282,18 +280,18 @@ async function onPause() {
 // 重置动画
 async function onReset() {
   console.log("on reset")
-  cur.value = 0
+  setState(0);
   onPause()
-  interruptTransition()
-  await renderFrame(all_state[0])
+  await renderFrame(current_state.value)
 }
 
 // 调整动画进度
 async function onUpdateProgress(progress: number) {
   console.log("on update", pause.value)
-  cur.value = progress;
+  setState(progress);
   if (pause.value) {
-
+    // 渲染当前帧
+    renderFrame(current_state.value);
   }
 }
 </script>
