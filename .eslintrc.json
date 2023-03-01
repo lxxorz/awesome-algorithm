@@ -1,0 +1,43 @@
+{
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+  "rules": {
+    "object-curly-newline": [
+      "error",
+      {
+        "ObjectExpression": {
+          "multiline": true,
+          "minProperties": 2
+        },
+        "ObjectPattern": {
+          "multiline": true,
+          "minProperties": 2
+        },
+        "ImportDeclaration": {
+          "multiline": true,
+          "minProperties": 2
+        },
+        "ExportDeclaration": {
+          "multiline": true,
+          "minProperties": 2
+        }
+      }
+    ],
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error"
+  },
+  "extends": [
+    "plugin:vue/vue3-recommended",
+    "eslint:recommended",
+    "plugin:lit/recommended"
+  ],
+  "ignorePatterns": [
+    "packages/data_generator/dist/*",
+    "packages/site/dist/*"
+  ],
+  "plugins": [
+    "simple-import-sort"
+  ]
+}
