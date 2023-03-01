@@ -6,12 +6,12 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: () => import("../views/SortAnimation/AlgorithmVisualize.vue"),
+      component: () => import("../views/SortAnimation/SortPanel.vue"),
     },
     {
       path: "/algorithm/sort",
       name: "sort",
-      component: () => import("../views/SortAnimation/AlgorithmVisualize.vue"),
+      component: () => import("../views/SortAnimation/SortPanel.vue"),
     },
   ],
 });

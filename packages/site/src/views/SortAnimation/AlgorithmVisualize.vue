@@ -3,11 +3,13 @@ import { ref, onMounted, computed } from "vue";
 import { select, type BaseType, type Selection } from "d3-selection";
 import SortToolBar from "./SortToolBar.vue";
 import { NCard } from "naive-ui";
-import DescriptionCard from '@/components/DescriptionCard.vue'
-import { type SortResultData, selection_sort, type State } from "data_generator"
+import type { SortResultData, State, SortFn } from "data_generator"
 import { transition, type Transition } from "d3-transition"
 import type { SortItem, Widget } from "@/types";
-
+export type Props = {
+  sort_fn: SortFn<SortItem[]>
+}
+const props = defineProps<Props>();
 const container = ref(null);
 const delay = ref(250);
 const svgTheme = {
@@ -51,7 +53,7 @@ const data = getData([1, 2, 3, 4, 58, 8, 24, 59, 80], widget);
 const { bar_width, bar_gap } = getBarWidth(data);
 const getX = (index: number) => index * (bar_gap + bar_width)
 const getY = (nodeHeight: number, height: number) => height - nodeHeight;
-const sortResult: SortResultData<SortItem> = selection_sort(data);
+const sortResult: SortResultData<SortItem> = props.sort_fn(data);
 const all_state = sortResult.state;
 const cur = ref(0);
 const pause = ref(true);
@@ -296,41 +298,9 @@ async function onUpdateProgress(progress: number) {
 }
 </script>
 <template>
-  <div class="panel">
-    <n-card>
-      <svg id="container" ref="container"></svg>
-      <sort-tool-bar class="tool-bar" @on-start="onStart" @on-pause="onPause" @on-reset="onReset" :auto_start="false"
-        :max="sortResult.step_num - 1" :progress="cur" @update:progress="onUpdateProgress"></sort-tool-bar>
-    </n-card>
-    <description-card class="desc-card"></description-card>
-  </div>
+  <n-card>
+    <svg id="container" ref="container"></svg>
+    <sort-tool-bar class="tool-bar" @on-start="onStart" @on-pause="onPause" @on-reset="onReset" :auto_start="false"
+      :max="sortResult.step_num - 1" :progress="cur" @update:progress="onUpdateProgress"></sort-tool-bar>
+  </n-card>
 </template>
-
-<style scoped>
-.panel {
-  inline-size: 100%;
-  block-size: 100%;
-  display: flex;
-  flex-flow: row;
-  justify-content: space-evenly;
-  align-items: stretch;
-}
-
-@media (max-width: 1024px) {
-  .panel {
-    flex-flow: column;
-  }
-}
-
-.panel>* {
-  flex: 1 1 50%
-}
-
-.container {
-  max-height: 100%;
-}
-
-.bar-text {
-  fill: #f00
-}
-</style>

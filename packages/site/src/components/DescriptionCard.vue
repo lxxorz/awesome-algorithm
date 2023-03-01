@@ -10,10 +10,13 @@
 
 <script setup lang="ts">
 import { NCard } from 'naive-ui';
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { useMathScope } from '@/utils/common';
-let desc = ref(String.raw`some thing about $E=mc^2$ and $f(x)=\sqrt{a+b}$`);
-const rendered_desc = computed(() => useMathScope(desc));
+export type Props = {
+  desc: string
+}
+const props = defineProps<Props>()
+const rendered_desc = computed(() => useMathScope(props.desc));
 </script>
 
 <style scoped>
