@@ -4,6 +4,10 @@
     "es2022": true
   },
   "rules": {
+    "quotes": [
+      "error",
+      "single"
+    ],
     "object-curly-newline": [
       "error",
       {
@@ -25,6 +29,7 @@
         }
       }
     ],
+    "newline-per-chained-call": "error",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error"
   },
@@ -44,5 +49,18 @@
   "parser": "vue-eslint-parser",
   "parserOptions": {
     "parser": "@typescript-eslint/parser"
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "*.vue"
+      ],
+      "plugins": [
+        "vue"
+      ],
+      "extends": [
+        "plugin:vue/vue3-recommended"
+      ]
+    }
+  ]
 }
