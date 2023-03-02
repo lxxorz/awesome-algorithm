@@ -17,7 +17,7 @@
         },
         "ImportDeclaration": {
           "multiline": true,
-          "minProperties": 2
+          "minProperties": 5
         },
         "ExportDeclaration": {
           "multiline": true,
@@ -29,9 +29,10 @@
     "simple-import-sort/exports": "error"
   },
   "extends": [
-    "plugin:vue/vue3-recommended",
     "eslint:recommended",
-    "plugin:lit/recommended"
+    "plugin:lit/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:vue/vue3-recommended"
   ],
   "ignorePatterns": [
     "packages/data_generator/dist/*",
@@ -39,5 +40,9 @@
   ],
   "plugins": [
     "simple-import-sort"
-  ]
+  ],
+  "parser": "vue-eslint-parser",
+  "parserOptions": {
+    "parser": "@typescript-eslint/parser"
+  }
 }

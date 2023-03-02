@@ -1,7 +1,7 @@
-import { h, ref, type Component } from "vue"
 import type { MaybeRef } from "@vueuse/core";
 import renderMathInElement from "katex"
 import { NIcon } from "naive-ui";
+import { type Component,h, ref } from "vue"
 export const randomArray = (arr: number[]) => {
   for (let i = arr.length - 1; i >= 0; --i) {
     const swap_id = Math.floor(Math.random() * i);

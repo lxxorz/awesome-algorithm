@@ -6,6 +6,6 @@ export type Datum = {
   value: number
 }
 
-export type SelectionLike<T extends SVGElement, U extends unknown> =
+export type SelectionLike<T extends SVGElement, U> =
   | Selection<T, U, BaseType, unknown>
   | Transition<T, U, BaseType, unknown>

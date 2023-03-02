@@ -10,7 +10,7 @@ export type State<T extends Item> = {
 export type Item = {
   id: ID
   value: number
-  [key: string]: any
+  [key: string]: unknown
 }
 export type SortResultData<T extends Item> = {
   state: Array<State<T>>

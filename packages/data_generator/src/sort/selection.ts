@@ -1,12 +1,12 @@
-import type {ID, State, Item, SortResultData } from "./utils"
+import type { ID, Item, SortResultData,State } from "./utils"
 function swap_arr(arr: Array<unknown>, i: number, j: number) {
-  ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  [arr[i], arr[j]] = [arr[j], arr[i]]
 }
 export function selection_sort<T extends Array<Item>>(arr: T): SortResultData<T[number]> {
   const length = arr.length;
   const state: Array<State<T[number]>> = [];
   const sorted = new Set<ID>()
-  let is_end = false;
+  const is_end = false;
   let max = 0;
   state.push({
     data: [...arr],

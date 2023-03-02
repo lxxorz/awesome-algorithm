@@ -1,6 +1,6 @@
 <template>
   <div class="panel">
-    <algorithm-visualize :sort_fn="sort_fn" />
+    <algorithm-visualize :sort-fn="sort_fn" />
     <description-card :desc="desc" />
   </div>
 </template>

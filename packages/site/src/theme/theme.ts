@@ -1,12 +1,8 @@
 import type {GlobalThemeOverrides} from "naive-ui"
-import {ref, type Ref} from "vue"
+import {type Ref,ref} from "vue"
 export const theme: Ref<GlobalThemeOverrides> = ref({
-  Layout: {
-    "color": "#F2F2F2"
-  },
-  Card: {
-    "color": "transparent",
-  },
+  Layout: {"color": "#F2F2F2"},
+  Card: {"color": "transparent",},
   Button: {
     textColor: "#737373",
     textColorHover: "#404040",

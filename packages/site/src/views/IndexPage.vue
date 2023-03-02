@@ -1,23 +1,22 @@
 <script setup lang="ts">
-import { toolsKey } from "@/utils/toolKeys";
 import {
-  NLayoutSider,
+  AlignRight as ItemIcon,
+  ArrowsSort as SortIcon,
+} from "@vicons/tabler";
+import {
   NLayout,
-  NMenu,
   NLayoutContent,
+  NLayoutSider,
+  NMenu,
   useMessage,
 } from "naive-ui";
-import { ref, h, provide } from "vue";
-import {
-  ArrowsSort as SortIcon,
-  AlignRight as ItemIcon,
-} from "@vicons/tabler";
+import {h, provide,ref} from "vue";
 import { RouterLink } from "vue-router";
-import { renderIcon } from "@/utils/common"
 
-const tools = ref({
-  pause: false,
-});
+import { renderIcon } from "@/utils/common"
+import { toolsKey } from "@/utils/toolKeys";
+
+const tools = ref({pause: false,});
 provide(toolsKey, tools);
 const inverted = ref(false);
 const message = useMessage();
@@ -35,11 +34,7 @@ const menuOptions = ref([
         label: () =>
           h(
             RouterLink,
-            {
-              to: {
-                name: "sort",
-              },
-            },
+            {to: {name: "sort",},},
             { default: () => "选择排序" }
           ),
         key: "selection-sort",
@@ -57,16 +52,36 @@ const menuOptions = ref([
 </script>
 <template>
   <div class="animation-container">
-    <n-layout embedded has-sider style="width: 100vw; height: 100vh;" content-style="padding: 24px">
-      <n-layout-sider v-model:collapsed="is_collapsed" bordered show-trigger collapse-mode="width" :collapsed-width="64"
-        :width="240" :native-scrollbar="false" :inverted="inverted">
-        <n-menu @update-value="handleUpdateValue" :inverted="inverted" :collapsed-width="64" :collapsed-icon-size="22"
-          :options="menuOptions" />
+    <n-layout
+      embedded
+      has-sider
+      style="width: 100vw; height: 100vh;"
+      content-style="padding: 24px"
+    >
+      <n-layout-sider
+        v-model:collapsed="is_collapsed"
+        bordered
+        show-trigger
+        collapse-mode="width"
+        :collapsed-width="64"
+        :width="240"
+        :native-scrollbar="false"
+        :inverted="inverted"
+      >
+        <n-menu
+          :inverted="inverted"
+          :collapsed-width="64"
+          :collapsed-icon-size="22"
+          :options="menuOptions"
+          @update-value="handleUpdateValue"
+        />
       </n-layout-sider>
-      <n-layout-content :native-scrollbar="false" :inverted="inverted">
+      <n-layout-content
+        :native-scrollbar="false"
+        :inverted="inverted"
+      >
         <RouterView />
       </n-layout-content>
     </n-layout>
   </div>
 </template>
-<style scoped></style>

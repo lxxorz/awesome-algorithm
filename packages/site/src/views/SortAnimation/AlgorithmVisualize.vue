@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
-import { select, type BaseType, type Selection } from "d3-selection";
-import SortToolBar from "./SortToolBar.vue";
+import {type BaseType, select, type Selection} from "d3-selection";
+import {type Transition,transition} from "d3-transition"
+import type {SortFn,SortResultData, State} from "data_generator"
 import { NCard } from "naive-ui";
-import type { SortResultData, State, SortFn } from "data_generator"
-import { transition, type Transition } from "d3-transition"
-import type { SortItem, Widget } from "@/types";
+import {computed,onMounted, ref} from "vue";
+
+import type {SortItem, Widget} from "@/types";
+
+import SortToolBar from "./SortToolBar.vue";
 export type Props = {
-  sort_fn: SortFn<SortItem[]>
+  sortFn: SortFn<SortItem[]>
 }
 const props = defineProps<Props>();
 const container = ref(null);
@@ -26,7 +28,9 @@ const widget: Widget = {
 // 数据归一化处理
 function getData(raw_data: Array<number>, widget: Widget) {
   const { height } = widget;
-  const wrap_data: Array<SortItem> = raw_data.map((value, i) => ({ value, id: i++, label: value }))
+  const wrap_data: Array<SortItem> = raw_data.map((value, i) => ({
+ value, id: i++, label: value
+}))
   const max = Math.max(...raw_data);
   return wrap_data.map(datum => {
     const { value } = datum;
@@ -50,10 +54,12 @@ function getBarWidth(sort_items: Array<SortItem>) {
 }
 const data = getData([1, 2, 3, 4, 58, 8, 24, 59, 80], widget);
 
-const { bar_width, bar_gap } = getBarWidth(data);
+const {
+ bar_width, bar_gap
+} = getBarWidth(data);
 const getX = (index: number) => index * (bar_gap + bar_width)
 const getY = (nodeHeight: number, height: number) => height - nodeHeight;
-const sortResult: SortResultData<SortItem> = props.sort_fn(data);
+const sortResult: SortResultData<SortItem> = props.sortFn(data);
 const all_state = sortResult.state;
 const cur = ref(0);
 const pause = ref(true);
@@ -66,7 +72,7 @@ function bindKey(datum: SortItem | number) {
   }
 }
 
-type SelectionLike<T extends SVGElement, U extends unknown> =
+type SelectionLike<T extends SVGElement, U> =
   | Selection<T, U, BaseType, unknown>
   | Transition<T, U, BaseType, unknown>
 function textStyle(selection_like: SelectionLike<SVGTextElement, SortItem>) {
@@ -164,7 +170,7 @@ function createChart() {
     .attr("y", (d) => getY(d.value, widget.height))
 
   labels.transition(getDefaultTransition())
-    .attr("y", (d, i) => getY(d.value, widget.height))
+    .attr("y", (d) => getY(d.value, widget.height))
 
 }
 
@@ -183,7 +189,7 @@ async function updateBar(currentState: State<SortItem>) {
   const colors = getColorMap(currentState);
 
   const updateTransition = bars.transition(getDefaultTransition())
-    .attr("fill", (d, i) => colors[d.id])
+    .attr("fill", (d) => colors[d.id])
     .transition()
     .attr("x", (d, i) => getX(i))
     .attr("y", (d) => getY(d.value, widget.height));
@@ -192,7 +198,9 @@ async function updateBar(currentState: State<SortItem>) {
 }
 
 function getColorMap(currentState: State<SortItem>) {
-  const { compared_id, sorted, is_end, max_id } = currentState;
+  const {
+ compared_id, sorted, is_end, max_id
+} = currentState;
   const colorMap: Record<string, string> = {};
 
   for (const item of currentState.data) {
@@ -299,8 +307,19 @@ async function onUpdateProgress(progress: number) {
 </script>
 <template>
   <n-card>
-    <svg id="container" ref="container"></svg>
-    <sort-tool-bar class="tool-bar" @on-start="onStart" @on-pause="onPause" @on-reset="onReset" :auto_start="false"
-      :max="sortResult.step_num - 1" :progress="cur" @update:progress="onUpdateProgress"></sort-tool-bar>
+    <svg
+      id="container"
+      ref="container"
+    />
+    <sort-tool-bar
+      class="tool-bar"
+      :auto_start="false"
+      :max="sortResult.step_num - 1"
+      :progress="cur"
+      @on-start="onStart"
+      @on-pause="onPause"
+      @on-reset="onReset"
+      @update:progress="onUpdateProgress"
+    />
   </n-card>
 </template>
