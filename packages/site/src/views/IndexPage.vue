@@ -2,19 +2,19 @@
 import {
   AlignRight as ItemIcon,
   ArrowsSort as SortIcon,
-} from "@vicons/tabler";
+} from '@vicons/tabler';
 import {
   NLayout,
   NLayoutContent,
   NLayoutSider,
   NMenu,
   useMessage,
-} from "naive-ui";
-import {h, provide,ref} from "vue";
-import { RouterLink } from "vue-router";
+} from 'naive-ui';
+import {h, provide,ref} from 'vue';
+import { RouterLink } from 'vue-router';
 
-import { renderIcon } from "@/utils/common"
-import { toolsKey } from "@/utils/toolKeys";
+import { renderIcon } from '@/utils/common'
+import { toolsKey } from '@/utils/toolKeys';
 
 const tools = ref({pause: false,});
 provide(toolsKey, tools);
@@ -26,23 +26,23 @@ const handleUpdateValue = (key: string) => {
 };
 const menuOptions = ref([
   {
-    label: "排序算法",
-    key: "sort-algorithm",
+    label: '排序算法',
+    key: 'sort-algorithm',
     icon: renderIcon(SortIcon),
     children: [
       {
         label: () =>
           h(
             RouterLink,
-            {to: {name: "sort",},},
-            { default: () => "选择排序" }
+            {to: {name: 'sort',},},
+            { default: () => '选择排序' }
           ),
-        key: "selection-sort",
+        key: 'selection-sort',
         icon: renderIcon(ItemIcon),
       },
       {
-        label: () => h("div", null, { default: () => "冒泡排序" }),
-        key: "bubble-sort",
+        label: () => h('div', null, { default: () => '冒泡排序' }),
+        key: 'bubble-sort',
         icon: renderIcon(ItemIcon),
       },
     ],

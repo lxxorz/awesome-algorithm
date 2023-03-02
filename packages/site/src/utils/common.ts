@@ -1,7 +1,7 @@
-import type { MaybeRef } from "@vueuse/core";
-import renderMathInElement from "katex"
-import { NIcon } from "naive-ui";
-import { type Component,h, ref } from "vue"
+import type { MaybeRef } from '@vueuse/core';
+import renderMathInElement from 'katex'
+import { NIcon } from 'naive-ui';
+import { type Component,h, ref } from 'vue'
 export const randomArray = (arr: number[]) => {
   for (let i = arr.length - 1; i >= 0; --i) {
     const swap_id = Math.floor(Math.random() * i);
@@ -26,9 +26,9 @@ export function useMathScope(desc: MaybeRef<string>) {
   desc = ref(desc)
   let match = inline_math_reg.exec(desc.value);
   while (match != null) {
-    desc.value = desc.value.replace(match[0], renderMathInElement.renderToString(match[0].replaceAll("$", ""), {
+    desc.value = desc.value.replace(match[0], renderMathInElement.renderToString(match[0].replaceAll('$', ''), {
       displayMode: false,
-      output: "mathml"
+      output: 'mathml'
     }))
     match = inline_math_reg.exec(desc.value);
   }

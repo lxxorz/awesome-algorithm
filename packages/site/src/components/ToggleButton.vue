@@ -1,72 +1,71 @@
 <template>
-  <n-button @click="toggle" :type="props.type" :render-icon="renderIcon(icon)">
-      {{ text }}
+  <n-button
+    :type="props.type"
+    :render-icon="renderIcon(icon)"
+    @click="toggle"
+  >
+    {{ text }}
   </n-button>
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef } from "vue"
-import { NButton } from 'naive-ui';
-import type { Type } from 'naive-ui/es/button/src/interface';
-import { renderIcon } from '@/utils/common';
-import type { Component } from 'vue';
 import {
   PlayerPause as PauseIcon,
   PlayerPlay as StartIcon,
-} from "@vicons/tabler";
-export type State = "1" | "2";
+} from '@vicons/tabler';
+import { NButton } from 'naive-ui';
+import type { Type } from 'naive-ui/es/button/src/interface';
+import type { Component } from 'vue';
+import { ref, shallowRef } from 'vue'
+
+import { renderIcon } from '@/utils/common';
+export type State = '1' | '2';
 export type Props = {
   type?: Type
   initState?: State
-  icon_1?: Component
-  icon_2?: Component
-  text_1?: string
-  text_2?: string
+  icon1?: Component
+  icon2?: Component
+  text1?: string
+  text2?: string
 }
 const props = withDefaults(defineProps<Props>(), {
-  type: "default",
-  initState: "1",
-  icon_1: StartIcon,
-  icon_2: PauseIcon,
-  text_1: "开始",
-  text_2: "暂停"
+  type: 'default',
+  initState: '1',
+  icon1: StartIcon,
+  icon2: PauseIcon,
+  text1: 'start',
+  text2: 'pause'
 })
-const state = ref<State>(props.initState ?? "1")
-const icon = shallowRef<Component>(props.icon_1);
-const text = ref("开始" ?? props.text_1);
+const state = ref<State>(props.initState ?? '1')
+const icon = shallowRef<Component>(props.icon1);
+const text = ref('start' ?? props.text1);
 const emits = defineEmits<{
-  (e: "onToggle", state: State): void
+  (e: 'onToggle', state: State): void
 }>()
 function reset() {
-  icon.value = props.icon_1;
+  icon.value = props.icon1;
   state.value = props.initState ?? true;
-  text.value = props.text_1 ?? "开始"
+  text.value = props.text1 ?? 'start'
 }
 function toggle() {
-  if (state.value === "1") {
+  if (state.value === '1') {
     start()
   } else {
     end();
   }
-  emits("onToggle", state.value);
+  emits('onToggle', state.value);
 }
 
 function start() {
-  state.value = "2";
-  icon.value = props.icon_2;
-  text.value = props.text_2;
+  state.value = '2';
+  icon.value = props.icon2;
+  text.value = props.text2;
 }
 
 function end() {
-  state.value = "1";
-  icon.value = props.icon_1
-  text.value = props.text_1
+  state.value = '1';
+  icon.value = props.icon1
+  text.value = props.text1
 }
-defineExpose({
-  reset
-})
+defineExpose({reset})
 </script>
-
-<style scoped>
-
-</style>

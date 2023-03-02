@@ -1,16 +1,19 @@
 <template>
   <n-card style="overflow:auto">
+    <!-- eslint-disable vue/no-v-html -->
     <div class="card">
-      <span class="desc" v-html="rendered_desc.value">
-      </span>
+      <span
+        class="desc"
+        v-html="rendered_desc.value"
+      />
     </div>
-
   </n-card>
 </template>
 
 <script setup lang="ts">
 import { NCard } from 'naive-ui';
 import { computed } from 'vue';
+
 import { useMathScope } from '@/utils/common';
 export type Props = {
   desc: string

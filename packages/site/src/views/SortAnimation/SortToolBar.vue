@@ -1,35 +1,54 @@
 <template>
   <n-space class="tool-bar">
-    <toggle-button ref="refToggleButton" type="tertiary" @on-toggle="handleToggle" :init-state="'1'"/>
-    <n-button type="primary" :render-icon="renderIcon(ResetIcon)" @click="handleReset">重置</n-button>
-    <sort-slider v-model:value="progress" :max="props.max"></sort-slider>
+    <toggle-button
+      ref="refToggleButton"
+      type="tertiary"
+      :init-state="'1'"
+      @on-toggle="handleToggle"
+    />
+    <n-button
+      type="primary"
+      :render-icon="renderIcon(ResetIcon)"
+      @click="handleReset"
+    >
+      reset
+    </n-button>
+    <sort-slider
+      v-model:value="progress"
+      :max="props.max"
+    />
+    <array-input
+      :loading="props.loading"
+      @on-create-array="$event => emits('on-reset-data', $event)"
+    />
   </n-space>
 </template>
 
 <script setup lang="ts">
-import {
-  Refresh as ResetIcon,
-} from "@vicons/tabler";
-import { renderIcon } from "@/utils/common"
-import { ref,  watchEffect } from "vue"
-import ToggleButton, { type State } from "@/components/ToggleButton.vue";
-import { NSpace, NButton } from "naive-ui";
-import SortSlider from "../SortSlider.vue";
-import { useVModel } from "@vueuse/core"
+import {Refresh as ResetIcon,} from '@vicons/tabler';
+import { useVModel } from '@vueuse/core'
+import { NButton,NSpace } from 'naive-ui';
+import { ref,  watchEffect } from 'vue'
+
+import ArrayInput from '@/components/input/ArrayInput.vue'
+import ToggleButton, { type State } from '@/components/ToggleButton.vue';
+import { renderIcon } from '@/utils/common'
+
+import SortSlider from '../SortSlider.vue';
 
 export type Props = {
-  auto_start: boolean
+  autoStart: boolean
+  loading: boolean
   progress?: number
-  max: number
+  max: number,
 }
-const refToggleButton = ref<InstanceType<typeof ToggleButton> | null>(null)
 const props = withDefaults(defineProps<Props>(), {
-  auto_start: false,
+  autoStart: false,
   progress: 0
 })
-
-const emits = defineEmits(["onPause", "onStart", "onReset", "update:progress"])
-const progress = useVModel(props, "progress", emits)
+const emits = defineEmits(['onPause', 'onStart', 'onReset', 'update:progress', 'on-reset-data'])
+const refToggleButton = ref<InstanceType<typeof ToggleButton> | null>(null)
+const progress = useVModel(props, 'progress', emits)
 
 watchEffect(() => {
   if (progress.value === props.max) {
@@ -38,7 +57,7 @@ watchEffect(() => {
 })
 
 function handleToggle(is_start: State) {
-  is_start === "1" ? emits("onPause") : emits("onStart")
+  is_start === '1' ? emits('onPause') : emits('onStart')
 }
 
 function reset() {

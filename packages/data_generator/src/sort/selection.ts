@@ -1,4 +1,4 @@
-import type { ID, Item, SortResultData,State } from "./utils"
+import {ID, Item, SortResultData,State} from './utils'
 function swap_arr(arr: Array<unknown>, i: number, j: number) {
   [arr[i], arr[j]] = [arr[j], arr[i]]
 }

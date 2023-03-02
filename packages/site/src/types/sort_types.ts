@@ -1,5 +1,5 @@
-import type { BaseType, Selection } from "d3-selection"
-import type {Transition} from "d3-transition"
+import type { BaseType, Selection } from 'd3-selection'
+import type {Transition} from 'd3-transition'
 export type Datum = {
   id: string | number
   label: string

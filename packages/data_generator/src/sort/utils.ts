@@ -1,3 +1,5 @@
+import type {ComputedRef} from 'vue'
+import {computed} from 'vue'
 export type ID = string | number
 export type State<T extends Item> = {
   data: Array<T>
@@ -18,3 +20,7 @@ export type SortResultData<T extends Item> = {
 }
 
 export type SortFn<T extends Array<Item>> = ((arr: T) => SortResultData<T[number]>)
+export type SortFnRef<T extends Array<Item>> = ((arr: T) => ComputedRef<SortResultData<T[number]>>)
+export function useSortFn<T extends Item>(sort: SortFn<Array<T>>) {
+  return (arr: Array<T>) => computed(() => sort(arr))
+}

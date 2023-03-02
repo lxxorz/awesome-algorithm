@@ -1,5 +1,5 @@
-import type { InjectionKey } from "vue";
-import type { Ref } from "vue";
+import type { InjectionKey } from 'vue';
+import type { Ref } from 'vue';
 export const toolsKey = Symbol() as InjectionKey<
   Ref<{
     pause: boolean;
