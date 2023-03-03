@@ -1,12 +1,13 @@
 <script setup lang="ts">
+import {reactify} from '@vueuse/core'
 import {type BaseType, select, type Selection} from 'd3-selection';
 import {type Transition,transition} from 'd3-transition'
-import type {SortFn,SortResultData, State} from 'data_generator'
+import type {SortFn, State} from 'data_generator'
 import { NCard } from 'naive-ui';
 import {
-computed, type ComputedRef,
+computed,
 onMounted,ref,
-toRefs, watchEffect
+watchEffect
 } from 'vue';
 
 import type {SortItem, Widget} from '@/types';
@@ -65,17 +66,17 @@ function resetData(custom_data: Array<number>) {
     onReset();
   }
 }
-const wrap_data = computed(() => getData(raw_data.value, widget));
-const sort_result: ComputedRef<SortResultData<SortItem>> = computed(() => props.sortFn(wrap_data.value));
+const useSort = reactify(() => {
+  const wrap_data = getData(raw_data.value, widget);
+  return props.sortFn(wrap_data);
+})
+const sort_result = useSort();
 const all_state =  computed(() => sort_result.value.state)
 const current_state = computed(() => all_state.value[cur.value])
 const bar_size = computed(() => getBarWidth(raw_data.value.length))
 
-const {
-bar_gap, bar_width
-} = toRefs(bar_size.value)
 
-const getX = (index: number) => index * (bar_gap.value + bar_width.value)
+const getX = (index: number) => index * (bar_size.value.bar_gap + bar_size.value.bar_width)
 const getY = (nodeHeight: number) => widget.height - nodeHeight;
 const pause = ref(true);
 
@@ -138,7 +139,7 @@ function createChart() {
     .data(data, bindKey)
     .enter()
     .append('rect')
-    .attr('width', () => bar_width.value)
+    .attr('width', () => bar_size.value.bar_width)
     .attr('height', (d) => d.value)
     .attr('x', (d, i) => getX(i))
     .attr('y', widget.height)
@@ -153,7 +154,7 @@ function createChart() {
     .append('text')
     .attr('x', (d, i) => getX(i))
     .attr('y', widget.height)
-    .attr('dx', () => bar_width.value / 2)
+    .attr('dx', () => bar_size.value.bar_width/ 2)
     .attr('dy', () => '-10px')
     .call(textStyle)
     .text(d => d.label)
@@ -166,7 +167,7 @@ function createChart() {
     const label = labels.filter((d) => d.id === datum.id)
     const x = +rect.attr('x')
     const factor_offset = scale_factor - 1;
-    const x_offset = -(x * factor_offset + bar_width.value * factor_offset / 2);
+    const x_offset = -(x * factor_offset + bar_size.value.bar_width * factor_offset / 2);
     select(this)
       .transition()
       .attr('stroke-width', 2)
@@ -208,7 +209,7 @@ async function updateBar(state: State<SortItem>) {
   console.log('update', bar_selection);
   bar_selection.enter()
   .append('rect')
-    .attr('width', () => bar_width.value)
+    .attr('width', () => bar_size.value.bar_width)
     .attr('height', (d) => d.value)
     .attr('x', (d, i) => getX(i))
     .attr('y', widget.height)
