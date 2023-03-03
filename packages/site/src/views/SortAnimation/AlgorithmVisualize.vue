@@ -116,51 +116,27 @@ function getDefaultTransition(duration: (() => number) | number = delay.value) {
   return transition().duration(stepCostTime);
 }
 const selectChart = () => select(container.value)
-  .append('g')
+.append('g')
   .attr('id', 'sort-bar')
-  .selectAll<SVGRectElement, number>('rect')
+
 
 const selectLabel = () => select(container.value)
   .append('g')
   .attr('id', 'text')
   .attr('text-anchor', 'middle')
-  .selectAll<SVGTextElement, number>('text')
 
-function createChart() {
-  const { data } = current_state.value;
-  const scale_factor = 1.05;
-  const colors = getColorMap(current_state.value);
+
+function initChart() {
+  selectChart()
+  selectLabel()
   select(container.value)
     .attr('width', widget.width)
     .attr('height', widget.height)
     .attr('viewBox', [0, 0, widget.width, widget.height])
     .attr('style', 'max-width: 100%; height: auto; height: intrinsic;');
-  const rects = selectChart()
-    .data(data, bindKey)
-    .enter()
-    .append('rect')
-    .attr('width', () => bar_size.value.bar_width)
-    .attr('height', (d) => d.value)
-    .attr('x', (d, i) => getX(i))
-    .attr('y', widget.height)
-    .attr('fill', (d) => colors[d.id])
-    .attr('stroke', svgTheme.stroke_color)
-    .attr('stroke-width', '1')
-    .attr('pointer-events', 'all')
-
-  const labels = selectLabel()
-    .data(data, bindKey)
-    .enter()
-    .append('text')
-    .attr('x', (d, i) => getX(i))
-    .attr('y', widget.height)
-    .attr('dx', () => bar_size.value.bar_width/ 2)
-    .attr('dy', () => '-10px')
-    .call(textStyle)
-    .text(d => d.label)
-    .attr('pointer-events', 'all')
-
-  rects.on('mouseover', function (event, datum,) {
+}
+// TODO 拆分函数
+function mouseoverBar(event, datum) {
     if (!pause.value)
       return;
     const rect = select(this);
@@ -174,7 +150,50 @@ function createChart() {
       .attr('transform', `translate(${x_offset}, 0) scale(${scale_factor}, 1)`)
     label.style('font-weight', 'bold')
       .style('font-size', '14px')
-  }).on('mouseout', function (event, datum) {
+}
+
+function updateChart() {
+  const { data } = current_state.value;
+  const scale_factor = 1.05;
+  const colors = getColorMap(current_state.value);
+  const rects = select('#sort-bar')
+    .selectAll<SVGRectElement, number>('rect')
+    .data(data, bindKey)
+  const labels = select('#text')
+    .selectAll<SVGTextElement, number>('text')
+    .data(data, bindKey)
+  rects.exit().remove();
+  rects.enter()
+    .append('rect')
+    .attr('width', () => bar_size.value.bar_width)
+    .attr('height', (d) => d.value)
+    .attr('x', (d, i) => getX(i))
+    .attr('y', widget.height)
+    .attr('fill', (d) => colors[d.id])
+    .attr('stroke', svgTheme.stroke_color)
+    .attr('stroke-width', '1')
+    .attr('pointer-events', 'all')
+  rects.enter()
+    .append('rect')
+    .attr('x', (d, i) => getX(i))
+    .attr('y', widget.height)
+    .attr('fill', (d) => colors[d.id])
+    .attr('stroke', svgTheme.stroke_color)
+    .attr('stroke-width', '1')
+    .attr('pointer-events', 'all')
+
+  labels.exit().remove();
+  labels.enter()
+    .append('text')
+    .attr('x', (d, i) => getX(i))
+    .attr('y', widget.height)
+    .attr('dx', () => bar_size.value.bar_width/ 2)
+    .attr('dy', () => '-10px')
+    .call(textStyle)
+    .text(d => d.label)
+    .attr('pointer-events', 'all')
+
+  rects.on('mouseover', mouseoverBar).on('mouseout', function (event, datum) {
     if (!pause.value)
       return;
     const label = labels.filter((d) => d.id === datum.id)
@@ -187,17 +206,20 @@ function createChart() {
   })
 
   rects
+    .enter()
     .transition(getDefaultTransition())
     .attr('y', (d) => getY(d.value))
 
-  labels.transition(getDefaultTransition())
+  labels
+    .enter()
+    .transition(getDefaultTransition())
     .attr('y', (d) => getY(d.value))
-
 }
+
 
 // 初始化动画
 onMounted(() => {
-  createChart();
+  initChart();
 })
 
 async function updateBar(state: State<SortItem>) {
@@ -212,7 +234,7 @@ async function updateBar(state: State<SortItem>) {
     .attr('width', () => bar_size.value.bar_width)
     .attr('height', (d) => d.value)
     .attr('x', (d, i) => getX(i))
-    .attr('y', widget.height)
+    .attr('y', d => getY(d.value))
     .attr('fill', (d) => colors[d.id])
     .attr('stroke', svgTheme.stroke_color)
     .attr('stroke-width', '1')
@@ -223,6 +245,7 @@ async function updateBar(state: State<SortItem>) {
     .transition()
     .attr('x', (d, i) => getX(i))
     .attr('y', (d) => getY(d.value))
+    .attr('width', () => bar_size.value.bar_width)
     .attr('height', d => d.value)
   await bar_transition.end();
 }
@@ -267,6 +290,8 @@ async function updateText(state: State<SortItem>) {
     .duration(delay.value)
     .attr('x', (d, i) => getX(i))
     .attr('y', (d) => getY(d.value))
+    .attr('dx', () => bar_size.value.bar_width/ 2)
+    .attr('dy', () => '-10px')
     .text(d => d.label)
     .call(textStyle);
 
