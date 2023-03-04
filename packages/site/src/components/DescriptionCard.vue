@@ -4,7 +4,7 @@
     <div class="card">
       <span
         class="desc"
-        v-html="rendered_desc.value"
+        v-html="rendered_desc"
       />
     </div>
   </n-card>
@@ -12,14 +12,13 @@
 
 <script setup lang="ts">
 import { NCard } from 'naive-ui';
-import { computed } from 'vue';
 
 import { useMathScope } from '@/utils/common';
 export type Props = {
   desc: string
 }
 const props = defineProps<Props>()
-const rendered_desc = computed(() => useMathScope(props.desc));
+const rendered_desc = useMathScope(props.desc);
 </script>
 
 <style scoped>
