@@ -5,9 +5,9 @@ import {type Transition,transition} from 'd3-transition'
 import type {SortFn, State} from 'data_generator'
 import { NCard } from 'naive-ui';
 import {
-computed,
-onMounted,ref,
-watchEffect
+  computed,
+  onMounted,ref,
+  watchEffect
 } from 'vue';
 
 import type {SortItem, Widget} from '@/types';
@@ -31,13 +31,11 @@ const widget: Widget = {
   width: 800,
   height: 600,
 };
-// TODO: 自定义生成数据
-// 数据归一化处理
 function getData(raw_data: Array<number>, widget: Widget) {
   const { height } = widget;
   const wrap_data: Array<SortItem> = raw_data.map((value, i) => ({
- value, id: i++, label: value
-}))
+    value, id: i++, label: value
+  }))
   const max = Math.max(...raw_data);
   return wrap_data.map(datum => {
     const { value } = datum;
@@ -116,7 +114,7 @@ function getDefaultTransition(duration: (() => number) | number = delay.value) {
   return transition().duration(stepCostTime);
 }
 const selectChart = () => select(container.value)
-.append('g')
+  .append('g')
   .attr('id', 'sort-bar')
 
 
@@ -135,8 +133,15 @@ function initChart() {
     .attr('viewBox', [0, 0, widget.width, widget.height])
     .attr('style', 'max-width: 100%; height: auto; height: intrinsic;');
 }
-// TODO 拆分函数
-function mouseoverBar(event, datum) {
+
+ type BarSelection = Selection<SVGRectElement, SortItem, BaseType, unknown>
+ type TextSelection = Selection<SVGTextElement, SortItem, BaseType, unknown>
+
+
+// 绑定hover效果
+function bindMouseEffect(labels: TextSelection, rects: BarSelection) {
+  const scale_factor = 1.05;
+  function mouseOver(this:SVGRectElement, event: any, datum: SortItem) {
     if (!pause.value)
       return;
     const rect = select(this);
@@ -150,50 +155,8 @@ function mouseoverBar(event, datum) {
       .attr('transform', `translate(${x_offset}, 0) scale(${scale_factor}, 1)`)
     label.style('font-weight', 'bold')
       .style('font-size', '14px')
-}
-
-function updateChart() {
-  const { data } = current_state.value;
-  const scale_factor = 1.05;
-  const colors = getColorMap(current_state.value);
-  const rects = select('#sort-bar')
-    .selectAll<SVGRectElement, number>('rect')
-    .data(data, bindKey)
-  const labels = select('#text')
-    .selectAll<SVGTextElement, number>('text')
-    .data(data, bindKey)
-  rects.exit().remove();
-  rects.enter()
-    .append('rect')
-    .attr('width', () => bar_size.value.bar_width)
-    .attr('height', (d) => d.value)
-    .attr('x', (d, i) => getX(i))
-    .attr('y', widget.height)
-    .attr('fill', (d) => colors[d.id])
-    .attr('stroke', svgTheme.stroke_color)
-    .attr('stroke-width', '1')
-    .attr('pointer-events', 'all')
-  rects.enter()
-    .append('rect')
-    .attr('x', (d, i) => getX(i))
-    .attr('y', widget.height)
-    .attr('fill', (d) => colors[d.id])
-    .attr('stroke', svgTheme.stroke_color)
-    .attr('stroke-width', '1')
-    .attr('pointer-events', 'all')
-
-  labels.exit().remove();
-  labels.enter()
-    .append('text')
-    .attr('x', (d, i) => getX(i))
-    .attr('y', widget.height)
-    .attr('dx', () => bar_size.value.bar_width/ 2)
-    .attr('dy', () => '-10px')
-    .call(textStyle)
-    .text(d => d.label)
-    .attr('pointer-events', 'all')
-
-  rects.on('mouseover', mouseoverBar).on('mouseout', function (event, datum) {
+  }
+  function mouseOut(this:SVGRectElement, event: any, datum: SortItem) {
     if (!pause.value)
       return;
     const label = labels.filter((d) => d.id === datum.id)
@@ -203,69 +166,89 @@ function updateChart() {
       .attr('stroke-width', 1)
     label.style('font-weight', 'normal')
       .style('font-size', '12px')
-  })
 
-  rects
-    .enter()
-    .transition(getDefaultTransition())
-    .attr('y', (d) => getY(d.value))
-
-  labels
-    .enter()
-    .transition(getDefaultTransition())
-    .attr('y', (d) => getY(d.value))
+  }
+  rects.on('mouseover', mouseOver).on('mouseout', mouseOut)
+}
+async function updateChart(frame: State<SortItem>) {
+  const { data } = frame;
+  const colors = getColorMap(frame);
+  const rects = select('#sort-bar')
+    .selectAll<SVGRectElement, number>('rect')
+    .data(data, bindKey)
+  const labels = select('#text')
+    .selectAll<SVGTextElement, number>('text')
+    .data(data, bindKey)
+  let transition_bar: Transition<SVGRectElement, SortItem, BaseType,  unknown>, transition_text: Transition<SVGTextElement, SortItem, BaseType, unknown> | null;
+  labels.join(
+    enter => enter.append('text')
+      .attr('x', (d, i) => getX(i))
+      .attr('y', widget.height)
+      .attr('dy', '-10px')
+      .attr('dx', bar_size.value.bar_width / 2)
+      .call(textStyle)
+      .text(d => d.label)
+      .transition(getDefaultTransition())
+      .attr('y', (d) => getY(d.value)),
+    update => transition_text = update
+      .transition(getDefaultTransition())
+      .attr('x', (d, i) => getX(i))
+      .attr('y', d => getY(d.value))
+      .attr('dy', '-10px')
+      .attr('dx', bar_size.value.bar_width / 2)
+      .call(textStyle)
+      .text(d => d.label),
+    exit => exit.remove()
+  )
+  rects.join(
+    enter => enter
+      .append('rect')
+      .attr('width', () => bar_size.value.bar_width)
+      .attr('height', (d) => d.value)
+      .attr('x', (d, i) => getX(i))
+      .attr('y', widget.height)
+      .attr('pointer-events', 'all')
+      .style('fill', (d) => colors[d.id])
+      .style('stroke', svgTheme.stroke_color)
+      .style('stroke-width', '1')
+      .transition(getDefaultTransition())
+      .attr('y', (d) => getY(d.value)),
+    update => transition_bar = update
+      .transition(getDefaultTransition())
+      .attr('x', (d, i) => getX(i))
+      .attr('y', d => getY(d.value))
+      .attr('width', () => bar_size.value.bar_width)
+      .attr('height', (d) => d.value)
+      .attr('pointer-events', 'all')
+      .style('fill', (d) => colors[d.id])
+      .style('stroke', svgTheme.stroke_color)
+      .style('stroke-width', '1'),
+    exit => exit.remove()
+  )
+  bindMouseEffect(labels, rects);
+  await Promise.all([transition_bar!.end(), transition_text!.end()])
 }
 
 
 // 初始化动画
 onMounted(() => {
-  initChart();
+  initChart()
+  renderFrame(current_state.value);
 })
-
-async function updateBar(state: State<SortItem>) {
-  const { data } = state;
-  const colors = getColorMap(state);
-  const bar_selection = select('#sort-bar')
-    .selectAll<SVGElement, number>('rect')
-    .data(data, bindKey)
-  console.log('update', bar_selection);
-  bar_selection.enter()
-  .append('rect')
-    .attr('width', () => bar_size.value.bar_width)
-    .attr('height', (d) => d.value)
-    .attr('x', (d, i) => getX(i))
-    .attr('y', d => getY(d.value))
-    .attr('fill', (d) => colors[d.id])
-    .attr('stroke', svgTheme.stroke_color)
-    .attr('stroke-width', '1')
-  bar_selection.exit().remove();
-
-  const bar_transition =  bar_selection.transition(getDefaultTransition())
-    .attr('fill', (d) => colors[d.id])
-    .transition()
-    .attr('x', (d, i) => getX(i))
-    .attr('y', (d) => getY(d.value))
-    .attr('width', () => bar_size.value.bar_width)
-    .attr('height', d => d.value)
-  await bar_transition.end();
-}
 
 function getColorMap(state: State<SortItem>) {
   const {
- compared_id, sorted, is_end, max_id
-} = state;
+    compared_id, sorted, is_end, max_id
+  } = state;
   const colorMap: Record<string, string> = {};
-
   for (const item of state.data) {
     const { id } = item;
-    if (is_end) {
+    if (is_end || sorted.has(id)) {
       colorMap[id] = 'orange';
     } else if (max_id === id) {
       colorMap[id] = 'green';
     } else if (compared_id.includes(id)) {
       colorMap[id] = 'red';
-    } else if (sorted.has(id)) {
-      colorMap[id] = 'orange';
     } else {
       colorMap[id] = svgTheme.bar_color;
     }
@@ -273,34 +256,8 @@ function getColorMap(state: State<SortItem>) {
 
   return colorMap;
 }
-async function updateText(state: State<SortItem>) {
-  const { data } = state;
-  const texts = select('#text').selectAll<SVGTextElement, number>('text')
-    .data(data, bindKey)
-  texts.exit().remove()
-  texts.enter().append('text')
-    .attr('x', (d, i) => getX(i))
-    .attr('y', (d) => getY(d.value))
-    .text(d => d.label)
-    .call(textStyle);
-
-  const update_transition = texts
-    .transition()
-    .delay(delay.value)
-    .duration(delay.value)
-    .attr('x', (d, i) => getX(i))
-    .attr('y', (d) => getY(d.value))
-    .attr('dx', () => bar_size.value.bar_width/ 2)
-    .attr('dy', () => '-10px')
-    .text(d => d.label)
-    .call(textStyle);
-
-  await update_transition.end()
-}
-
 async function renderFn(execute_times: number | null) {
   for (let times = 0; execute_times === null || times < execute_times; ++times) {
-
     // 算法完成
     if (!current_state.value) {
       return;
@@ -311,14 +268,14 @@ async function renderFn(execute_times: number | null) {
     }
     await renderFrame(current_state.value);
     const next_state = getState(cur.value + 1);
-    if (execute_times === null || times + 1 < execute_times && next_state) {
+    if (next_state && (execute_times === null || times + 1 < execute_times)) {
       setState(cur.value + 1);
     }
   }
 }
 
 async function renderFrame(frame: State<SortItem>) {
-  await Promise.all([updateBar(frame), updateText(frame)])
+  await updateChart(frame);
 }
 /**
  * 渲染可视化动画
@@ -376,7 +333,12 @@ async function onUpdateProgress(progress: number) {
     <svg
       id="container"
       ref="container"
-    />
+    >
+      <g style="fill: white ">
+        <path d="M12 21v-17" />
+        <path d="M18 15l-6 6-6-6" />
+      </g>
+    </svg>
     <sort-tool-bar
       :loading="false"
       class="tool-bar"

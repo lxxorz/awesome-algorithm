@@ -4,6 +4,7 @@
     "es2022": true
   },
   "rules": {
+    "indent": ["error", 2],
     "quotes": [
       "error",
       "single"
@@ -32,7 +33,7 @@
     "newline-per-chained-call": "error",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
-    "no-magic-numbers": "warn"
+    // "no-magic-numbers": "warn"
   },
   "extends": [
     "eslint:recommended",
@@ -54,12 +55,13 @@
   "overrides": [
     {
       "files": [
-        "*.vue"
+        "*.vue", "*.ts"
       ],
       "plugins": [
         "vue"
       ],
       "extends": [
+        "eslint:recommended",
         "plugin:vue/vue3-recommended"
       ]
     }

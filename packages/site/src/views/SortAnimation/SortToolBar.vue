@@ -1,24 +1,27 @@
 <template>
-  <n-space class="tool-bar">
-    <toggle-button
-      ref="refToggleButton"
-      type="tertiary"
-      :init-state="'1'"
-      @on-toggle="handleToggle"
-    />
-    <n-button
-      type="primary"
-      :render-icon="renderIcon(ResetIcon)"
-      @click="handleReset"
-    >
-      reset
-    </n-button>
+  <n-space vertical>
+    <n-space>
+      <toggle-button
+        ref="refToggleButton"
+        type="tertiary"
+        :init-state="'1'"
+        @on-toggle="handleToggle"
+      />
+      <n-button
+        type="primary"
+        :render-icon="renderIcon(ResetIcon)"
+        @click="handleReset"
+      >
+        reset
+      </n-button>
+    </n-space>
     <sort-slider
       v-model:value="progress"
       :max="props.max"
     />
     <array-input
       :loading="props.loading"
+      :localize="{key: 'sort-array', enable: true}"
       @on-create-array="$event => emits('on-reset-data', $event)"
     />
   </n-space>

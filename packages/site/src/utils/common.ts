@@ -34,3 +34,7 @@ export function useMathScope(desc: MaybeRef<string>) {
   }
   return desc;
 }
+
+export function rangeRandom(start:number, end: number){
+  return Math.ceil(start + Math.random() * (end - start));
+}
