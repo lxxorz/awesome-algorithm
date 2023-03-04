@@ -9,7 +9,7 @@ const router = createRouter({
       component: () => import('../views/SortAnimation/SortPanel.vue'),
     },
     {
-      path: '/algorithm/sort',
+      path: '/algorithm/sort/:sort',
       name: 'sort',
       component: () => import('../views/SortAnimation/SortPanel.vue'),
     },

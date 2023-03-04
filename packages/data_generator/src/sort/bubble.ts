@@ -1,11 +1,10 @@
 import type  {ID,Item, SortResultData, State} from './utils'
-import {swap} from './utils'
-export function selection_sort<T extends Array<Item>>(arr: T): SortResultData<T[number]> {
+import { swap } from './utils';
+export function bubble_sort<T extends Array<Item>>(arr: T): SortResultData<T[number]> {
   const length = arr.length;
   const state: Array<State<T[number]>> = [];
   const sorted = new Set<ID>()
   const is_end = false;
-
   // 初始帧
   state.push({
     data: [...arr],
@@ -16,35 +15,28 @@ export function selection_sort<T extends Array<Item>>(arr: T): SortResultData<T[
     is_end,
   })
 
-  for (let i = length - 1,max = 0, max_item = arr[max]; i > 0; i--) {
+  for (let i = 0,max = 0, max_item = arr[max]; i < length - 1; ++i) {
     // 找出最大值的下标
-    for (let j = 0, next_item = arr[j+1]; j < i; ++j, next_item = arr[j+1]) {
+    for (let j = 1, next_item = arr[j]; j < length - i;max = j, j += 1, next_item = arr[j]) {
+      let is_swap =false;
+      const compared_id = [max_item.id, next_item.id];
+      if(max_item.value > next_item.value) {
+        is_swap = true;
+        swap(arr, max, j);
+      } else {
+        max_item = next_item;
+      }
       state.push({
         data: [...arr],
-        compared_id: [max_item.id, next_item.id],
+        compared_id,
         sorted: new Set(sorted),
-        is_swap: false,
+        is_swap,
         max_id: max_item.id,
         is_end
       })
-      if (max_item.value < next_item.value) {
-        max = j + 1;
-        max_item = arr[j+1];
-      }
     }
-    // 将最大值和最后一项交换
-    swap(arr, max, i);
-    state.push({
-      data: [...arr],
-      compared_id: [max_item.id, max_item.id],
-      sorted: new Set(sorted),
-      is_swap: true,
-      max_id: max_item.id,
-      is_end
-    })
     // 标记有序项
     sorted.add(max_item.id);
-
     max = 0;
     max_item = arr[max];
   }

@@ -34,14 +34,27 @@ const menuOptions = ref([
         label: () =>
           h(
             RouterLink,
-            {to: {name: 'sort',},},
+            {
+              to: {
+                name: 'sort', params: {sort: 'selection-sort'},
+              }
+            },
             { default: () => '选择排序' }
           ),
         key: 'selection-sort',
         icon: renderIcon(ItemIcon),
       },
       {
-        label: () => h('div', null, { default: () => '冒泡排序' }),
+        label: () =>
+          h(
+            RouterLink,
+            {
+              to: {
+                name: 'sort', params: {sort: 'bubble-sort'}
+              }
+            },
+            { default: () => '冒泡排序' }
+          ),
         key: 'bubble-sort',
         icon: renderIcon(ItemIcon),
       },

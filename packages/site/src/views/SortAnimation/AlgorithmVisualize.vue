@@ -79,8 +79,7 @@ const getY = (nodeHeight: number) => widget.height - nodeHeight;
 const pause = ref(true);
 
 watchEffect(() => {
-  console.log('watch', bar_size.value)
-  console.log('raw_data', raw_data.value)
+  console.log(props.sortFn, sort_result.value);
 })
 
 function bindKey(datum: SortItem | number) {

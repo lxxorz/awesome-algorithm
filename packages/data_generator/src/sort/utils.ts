@@ -1,9 +1,9 @@
-import type {ComputedRef} from 'vue'
-import {computed} from 'vue'
+import type { ComputedRef } from 'vue'
+import { computed } from 'vue'
 export type ID = string | number
 export type State<T extends Item> = {
   data: Array<T>
-  readonly compared_id: [ID | null, ID | null]
+  compared_id: Array<ID>
   max_id: ID
   sorted: Set<ID>
   is_swap: boolean
@@ -24,3 +24,7 @@ export type SortFnRef<T extends Array<Item>> = ((arr: T) => ComputedRef<SortResu
 export function useSortFn<T extends Item>(sort: SortFn<Array<T>>) {
   return (arr: Array<T>) => computed(() => sort(arr))
 }
+export function swap(arr: Array<unknown>, i: number, j: number) {
+  [arr[i], arr[j]] = [arr[j], arr[i]]
+}
+export type SortAlgorithmName = 'selection-sort' | 'bubble-sort'
