@@ -2,7 +2,7 @@ import type { MaybeComputedRef } from '@vueuse/core';
 import { resolveRef } from '@vueuse/core';
 import renderMathInElement from 'katex'
 import { NIcon } from 'naive-ui';
-import { type Component,computed,h, ref } from 'vue'
+import { type Component,computed,h, unref } from 'vue'
 export const randomArray = (arr: number[]) => {
   for (let i = arr.length - 1; i >= 0; --i) {
     const swap_id = Math.floor(Math.random() * i);
@@ -22,21 +22,20 @@ export function renderIcon(icon: Component) {
   return () => h(NIcon, null, { default: () => h(icon) });
 }
 
+const inlineMathReg = /\$[^$]+?\$/g;
 export function useMathScope(desc: MaybeComputedRef<string>) {
   return computed(() => {
-    desc = resolveRef(desc);
-    const inline_math_reg = /\$[^$]+?\$/
-    desc = ref(desc)
-    let match = inline_math_reg.exec(desc.value);
-    let text = desc.value;
-    while (match != null) {
-      text = desc.value.replace(match[0], renderMathInElement.renderToString(match[0].replaceAll('$', ''), {
+    const text = resolveRef(desc);
+    const matches = text.value.match(inlineMathReg) ?? [];
+    const mathStrings = matches.map((match) => {
+      return renderMathInElement.renderToString(match.replaceAll('$', ''), {
         displayMode: false,
         output: 'mathml'
-      }))
-      match = inline_math_reg.exec(text);
-    }
-    return text;
+      });
+    });
+    return mathStrings.reduce((acc, mathString, index) => {
+      return acc.split(matches[index]).join(mathString);
+    }, unref(text));
   })
 }
 

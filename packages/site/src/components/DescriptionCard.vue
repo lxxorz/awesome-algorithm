@@ -18,7 +18,7 @@ export type Props = {
   desc: string
 }
 const props = defineProps<Props>()
-const rendered_desc = useMathScope(props.desc);
+const rendered_desc = useMathScope(() => props.desc);
 </script>
 
 <style scoped>

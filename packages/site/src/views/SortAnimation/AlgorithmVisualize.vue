@@ -7,7 +7,6 @@ import { NCard } from 'naive-ui';
 import {
   computed,
   onMounted,ref,
-  watchEffect
 } from 'vue';
 
 import type {SortItem, Widget} from '@/types';
@@ -79,10 +78,6 @@ const bar_gap = computed(() => bar_size.value.bar_gap);
 const getX = (index: number) => index * (bar_gap.value + bar_width.value)
 const getY = (nodeHeight: number) => widget.height - nodeHeight;
 const pause = ref(true);
-
-watchEffect(() => {
-  console.log(props.sortFn, sort_result.value);
-})
 
 function bindKey(datum: SortItem | number) {
   if (typeof datum === 'number') {
