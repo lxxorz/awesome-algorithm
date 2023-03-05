@@ -2,7 +2,7 @@
 import {reactify} from '@vueuse/core'
 import {type BaseType, select, type Selection} from 'd3-selection';
 import {type Transition,transition} from 'd3-transition'
-import type {SortFn, State} from 'data_generator'
+import type {ID,SortFn, State} from 'data_generator'
 import { NCard } from 'naive-ui';
 import {
   computed,
@@ -42,7 +42,7 @@ function getData(raw_data: Array<number>, widget: Widget) {
     // 将实际的值映射为高度
     return {
       ...datum,
-      value: (value / (max + 5)) * height
+      value: (value / (max + 15)) * height
     }
   })
 }
@@ -72,9 +72,11 @@ const sort_result = useSort();
 const all_state =  computed(() => sort_result.value.state)
 const current_state = computed(() => all_state.value[cur.value])
 const bar_size = computed(() => getBarWidth(raw_data.value.length))
+const bar_width = computed(() => bar_size.value.bar_width);
+const bar_gap = computed(() => bar_size.value.bar_gap);
 
 
-const getX = (index: number) => index * (bar_size.value.bar_gap + bar_size.value.bar_width)
+const getX = (index: number) => index * (bar_gap.value + bar_width.value)
 const getY = (nodeHeight: number) => widget.height - nodeHeight;
 const pause = ref(true);
 
@@ -133,29 +135,30 @@ function initChart() {
     .attr('style', 'max-width: 100%; height: auto; height: intrinsic;');
 }
 
- type BarSelection = Selection<SVGRectElement, SortItem, BaseType, unknown>
- type TextSelection = Selection<SVGTextElement, SortItem, BaseType, unknown>
+ type BarSelection = Selection<SVGRectElement | BaseType, SortItem, BaseType, unknown>
+ type TextSelection = Selection<SVGTextElement | BaseType, SortItem, BaseType, unknown>
 
 
 // 绑定hover效果
 function bindMouseEffect(labels: TextSelection, rects: BarSelection) {
   const scale_factor = 1.05;
-  function mouseOver(this:SVGRectElement, event: any, datum: SortItem) {
+  function mouseOver(this:BaseType | SVGRectElement, event: unknown, datum: SortItem) {
     if (!pause.value)
       return;
     const rect = select(this);
     const label = labels.filter((d) => d.id === datum.id)
     const x = +rect.attr('x')
     const factor_offset = scale_factor - 1;
-    const x_offset = -(x * factor_offset + bar_size.value.bar_width * factor_offset / 2);
+    const x_offset = -(x * factor_offset + bar_width.value * factor_offset / 2);
     select(this)
       .transition()
       .attr('stroke-width', 2)
       .attr('transform', `translate(${x_offset}, 0) scale(${scale_factor}, 1)`)
     label.style('font-weight', 'bold')
       .style('font-size', '14px')
+    addArrow(datum.id);
   }
-  function mouseOut(this:SVGRectElement, event: any, datum: SortItem) {
+  function mouseOut(this:BaseType | SVGRectElement, event: unknown, datum: SortItem) {
     if (!pause.value)
       return;
     const label = labels.filter((d) => d.id === datum.id)
@@ -165,9 +168,38 @@ function bindMouseEffect(labels: TextSelection, rects: BarSelection) {
       .attr('stroke-width', 1)
     label.style('font-weight', 'normal')
       .style('font-size', '12px')
-
+    removeArrow(datum.id);
   }
-  rects.on('mouseover', mouseOver).on('mouseout', mouseOut)
+  rects.on('mouseover.effect', null);
+  rects.on('mouseover.effect', mouseOver).on('mouseout', mouseOut)
+}
+
+async function addArrow(id: ID) {
+  const {data} = current_state.value;
+  const order = data.findIndex((item) => item.id === id);
+  const item_data = data[order];
+  const x = getX(order);
+  const y = getY(item_data.value);
+  let arrow = select(container.value)
+    .select<SVGPathElement>(`#max_arrow_${id}`);
+  if (arrow.empty()) {
+    arrow = select(container.value)
+      .append('path')
+      .attr('id', `max_arrow_${id}`);
+  }
+  arrow
+    .attr('d', `M${x + bar_width.value / 2 + 5} ${y - 70} v15 h15 l-20 20 l-20 -20 h15 v-15 h10`)
+    .style('fill', '#f1c40f')
+    .style('stroke', '#000')
+    .style('stroke-width', 2)
+    .style('filter', 'drop-shadow(0px 0px 10px rgba(255,255,255,1))')
+}
+function removeArrow(id: ID){
+  const arrow = select(container.value)
+    .select<SVGPathElement>(`#max_arrow_${id}`)
+  if(!arrow.empty()) {
+    arrow.remove();
+  }
 }
 async function updateChart(frame: State<SortItem>) {
   const { data } = frame;
@@ -179,12 +211,12 @@ async function updateChart(frame: State<SortItem>) {
     .selectAll<SVGTextElement, number>('text')
     .data(data, bindKey)
   let transition_bar: Transition<SVGRectElement, SortItem, BaseType,  unknown>, transition_text: Transition<SVGTextElement, SortItem, BaseType, unknown> | null;
-  labels.join(
+  const all_labels = labels.join(
     enter => enter.append('text')
       .attr('x', (d, i) => getX(i))
       .attr('y', widget.height)
       .attr('dy', '-10px')
-      .attr('dx', bar_size.value.bar_width / 2)
+      .attr('dx', bar_width.value / 2)
       .call(textStyle)
       .text(d => d.label)
       .transition(getDefaultTransition())
@@ -194,15 +226,15 @@ async function updateChart(frame: State<SortItem>) {
       .attr('x', (d, i) => getX(i))
       .attr('y', d => getY(d.value))
       .attr('dy', '-10px')
-      .attr('dx', bar_size.value.bar_width / 2)
+      .attr('dx', bar_width.value / 2)
       .call(textStyle)
       .text(d => d.label),
     exit => exit.remove()
   )
-  rects.join(
+  const all_rects = rects.join(
     enter => enter
       .append('rect')
-      .attr('width', () => bar_size.value.bar_width)
+      .attr('width', () => bar_width.value)
       .attr('height', (d) => d.value)
       .attr('x', (d, i) => getX(i))
       .attr('y', widget.height)
@@ -216,7 +248,7 @@ async function updateChart(frame: State<SortItem>) {
       .transition(getDefaultTransition())
       .attr('x', (d, i) => getX(i))
       .attr('y', d => getY(d.value))
-      .attr('width', () => bar_size.value.bar_width)
+      .attr('width', () => bar_width.value)
       .attr('height', (d) => d.value)
       .attr('pointer-events', 'all')
       .style('fill', (d) => colors[d.id])
@@ -224,7 +256,7 @@ async function updateChart(frame: State<SortItem>) {
       .style('stroke-width', '1'),
     exit => exit.remove()
   )
-  bindMouseEffect(labels, rects);
+  bindMouseEffect(all_labels, all_rects);
   await Promise.all([transition_bar!.end(), transition_text!.end()])
 }
 
@@ -333,10 +365,8 @@ async function onUpdateProgress(progress: number) {
       id="container"
       ref="container"
     >
-      <g style="fill: white ">
-        <path d="M12 21v-17" />
-        <path d="M18 15l-6 6-6-6" />
-      </g>
+    <!-- 高斯滤镜 -->
+
     </svg>
     <sort-tool-bar
       :loading="false"
