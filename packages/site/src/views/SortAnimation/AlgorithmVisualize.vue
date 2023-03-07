@@ -251,6 +251,7 @@ async function updateChart(frame: State<SortItem>) {
       .style('stroke-width', '1'),
     exit => exit.remove()
   )
+  // FIXME: 动画有可能被mouseover打断
   bindMouseEffect(all_labels, all_rects);
   await Promise.all([transition_bar!.end(), transition_text!.end()])
 }
